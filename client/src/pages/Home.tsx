@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  ArrowDownUp,
   ArrowUpRight,
   BadgeCheck,
   Banknote,
@@ -19,6 +20,7 @@ import {
   LockKeyhole,
   Menu,
   PiggyBank,
+  QrCode,
   Play,
   Plus,
   ReceiptText,
@@ -26,6 +28,7 @@ import {
   ShieldCheck,
   Share2,
   Sparkles,
+  SlidersHorizontal,
   TrendingUp,
   Umbrella,
   UserRound,
@@ -78,6 +81,8 @@ const insuranceProducts = [
     hospital: "Semak PDS",
     claim: "Rubrik perlu disahkan",
     tag: "Rujukan",
+    premiumValue: 35,
+    coverageScore: 2,
   },
   {
     id: "aia",
@@ -91,6 +96,8 @@ const insuranceProducts = [
     hospital: "Semak PDS",
     claim: "Rubrik perlu disahkan",
     tag: "Medikal dahulu",
+    premiumValue: 48,
+    coverageScore: 3,
   },
   {
     id: "tune",
@@ -104,6 +111,8 @@ const insuranceProducts = [
     hospital: "Semak PDS",
     claim: "Rubrik perlu disahkan",
     tag: "Rujukan",
+    premiumValue: 25,
+    coverageScore: 2,
   },
 ];
 
@@ -253,7 +262,8 @@ function EpfCalculator({ onSave }: { onSave: (label: string) => void }) {
   }, [recommended]);
 
   return (
-    <div className="calculator-shell">
+    <div className="calculator-shell calculator-hover-card epf-hover-card">
+      <span className="hover-hint"><Sparkles size={12} /> Kiraan responsif</span>
       <div className="calculator-intro"><div><SectionEyebrow icon={Landmark}>EPF • Simpanan masa depan</SectionEyebrow><h2>Berapa patut saya<br /><em>mula simpan?</em></h2><p>Kami cadangkan angka yang cukup realistik untuk pendapatan anda — bukan angka ideal yang susah nak ikut.</p></div><div className="source-chip"><BadgeCheck size={15} /> Rujukan EPF 2026</div></div>
       <div className="eligibility-box"><div className="eligibility-copy"><span className="success-mark"><Check size={17} /></span><div><b>Anda mungkin layak untuk i-Saraan Plus</b><p>Untuk pemandu e-hailing & p-hailing yang bekerja sendiri, sehingga RM600 matching setahun.</p></div></div><button className="toggle" onClick={() => setIsPlus(!isPlus)} aria-pressed={isPlus}><span className={isPlus ? "on" : ""} /><small>{isPlus ? "Plus" : "Asas"}</small></button></div>
       <div className="input-grid three">
@@ -275,7 +285,8 @@ function SocsoCalculator({ onSave }: { onSave: (label: string) => void }) {
   const tier = socsoTiers.find((item) => item.label === selected) ?? socsoTiers[0];
   useEffect(() => setSelected(closest.label), [closest.label]);
   return (
-    <div className="calculator-shell">
+    <div className="calculator-shell calculator-hover-card socso-hover-card">
+      <span className="hover-hint"><Sparkles size={12} /> Tier boleh ubah</span>
       <div className="calculator-intro"><div><SectionEyebrow icon={ShieldCheck}>SOCSO • Lindung Kendiri</SectionEyebrow><h2>Kalau berlaku apa-apa<br /><em>masa bekerja?</em></h2><p>SKSPS bantu lindungi anda daripada kemalangan kerja, penyakit pekerjaan, hilang upaya dan kematian.</p></div><div className="source-chip coral-chip"><BadgeCheck size={15} /> Rujukan PERKESO</div></div>
       <div className="socso-callout"><div className="callout-icon"><ShieldCheck size={20} /></div><div><b>Ini bukan simpanan EPF.</b><p>EPF bina duit untuk hari tua. Lindung Kendiri bantu bila anda cedera atau tak boleh bekerja.</p></div></div>
       <div className="input-grid two"><label className="field"><span>Pendapatan bulanan untuk rujukan</span><div className="input-wrap"><span>RM</span><input type="number" min={1050} step={100} value={income} onChange={(e) => setIncome(Number(e.target.value) || 0)} /></div></label><label className="field"><span>Pilih tier pendapatan dilindungi</span><select className="select-field" value={selected} onChange={(e) => setSelected(e.target.value)}>{socsoTiers.map((item) => <option key={item.label} value={item.label}>{item.label} / bulan</option>)}</select></label></div>
@@ -288,12 +299,18 @@ function SocsoCalculator({ onSave }: { onSave: (label: string) => void }) {
 }
 
 function InsuranceComparison({ selected, setSelected, onSave }: { selected: string; setSelected: (id: string) => void; onSave: (label: string) => void }) {
+  const [filter, setFilter] = useState("all");
+  const [sort, setSort] = useState("coverage");
+  const filteredProducts = insuranceProducts
+    .filter((product) => filter === "all" || (filter === "medical" ? product.id === "aia" : product.id !== "aia"))
+    .slice()
+    .sort((a, b) => sort === "premium" ? a.premiumValue - b.premiumValue : b.coverageScore - a.coverageScore);
   return (
     <div id="comparison" className="calculator-shell insurance-shell">
       <div className="calculator-intro"><div><SectionEyebrow icon={HeartPulse}>Insurans / Takaful • Banding dengan tenang</SectionEyebrow><h2>Pilih perlindungan yang<br /><em>melengkapkan anda.</em></h2><p>Jika SKSPS sudah lindungi kemalangan kerja, lihat pilihan medikal yang boleh isi ruang kosong — bukan bayar dua kali.</p></div><div className="source-chip mint-chip"><LockKeyhole size={15} /> Bukan ejen insurans</div></div>
       <div className="recommend-banner"><span className="recommend-star"><Sparkles size={16} /></span><div><b>Logik untuk Along</b><p>Mulakan dengan perlindungan medikal dahulu kerana SKSPS sudah fokus kepada kemalangan semasa bekerja.</p></div><span className="recommend-pill">Padanan terbaik</span></div>
-      <div className="comparison-table-wrap"><div className="comparison-labels"><span>Produk rujukan</span><span>Premium</span><span>Fokus perlindungan</span><span>Hospital</span><span>Status</span><span /></div>{insuranceProducts.map((product) => { const Icon = product.icon; const isSelected = selected === product.id; return <button key={product.id} className={`comparison-row ${isSelected ? "selected" : ""}`} onClick={() => setSelected(product.id)}><span className="product-cell"><span className={`product-icon ${product.tone}`}><Icon size={17} /></span><span><b>{product.name}</b><small>{product.short}</small></span></span><span className="table-value">{product.premium}</span><span className="table-value">{product.coverage}</span><span className="table-value">{product.hospital}</span><span className="table-value"><span className={`status-pill ${isSelected ? "chosen" : "pending"}`}>{isSelected ? <><Check size={12} /> Dipilih</> : product.tag}</span></span><span className="row-chevron"><ChevronRight size={17} /></span></button> })}</div>
-      <div className="rubric-note"><CircleHelp size={15} /><p><b>Kenapa ada “semak”?</b> Harga, jumlah perlindungan dan proses tuntutan berubah mengikut produk. Kami hanya tunjukkan maklumat yang perlu disahkan daripada quote / PDS semasa sebelum anda membuat keputusan.</p></div>
+      <div className="comparison-controls"><div className="filter-group"><SlidersHorizontal size={14} /><span>Penapis:</span><button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>Semua</button><button className={filter === "medical" ? "active" : ""} onClick={() => setFilter("medical")}>Fokus medikal</button><button className={filter === "accident" ? "active" : ""} onClick={() => setFilter("accident")}>Kemalangan / rider</button></div><label className="sort-control"><ArrowDownUp size={14} /><span>Susun</span><select value={sort} onChange={(e) => setSort(e.target.value)}><option value="coverage">Coverage paling luas</option><option value="premium">Premium terendah</option></select></label></div><div className="comparison-table-wrap"><div className="comparison-labels"><span>Produk rujukan</span><span>Premium</span><span>Fokus perlindungan</span><span>Hospital</span><span>Status</span><span /></div>{filteredProducts.map((product) => { const Icon = product.icon; const isSelected = selected === product.id; return <button key={product.id} className={`comparison-row ${isSelected ? "selected" : ""}`} onClick={() => setSelected(product.id)}><span className="product-cell"><span className={`product-icon ${product.tone}`}><Icon size={17} /></span><span><b>{product.name}</b><small>{product.short}</small></span></span><span className="table-value"><strong>RM {product.premiumValue}*</strong><small className="table-subnote">anggaran bulanan</small></span><span className="table-value">{product.coverage}</span><span className="table-value">{product.hospital}</span><span className="table-value"><span className={`status-pill ${isSelected ? "chosen" : "pending"}`}>{isSelected ? <><Check size={12} /> Dipilih</> : product.tag}</span></span><span className="row-chevron"><ChevronRight size={17} /></span></button> })}</div>
+      <div className="rubric-note"><CircleHelp size={15} /><p><b>Kenapa ada “semak”?</b> Harga contoh di atas hanyalah anggaran prototaip; jumlah perlindungan dan proses tuntutan berubah mengikut produk. Kami hanya tunjukkan maklumat yang perlu disahkan daripada quote / PDS semasa sebelum anda membuat keputusan.</p></div>
       <div className="insurance-actions"><button className="button button-dark" onClick={() => onSave(`Insurans: ${insuranceProducts.find((p) => p.id === selected)?.name}`)}>Simpan pilihan <Bookmark size={15} /></button><button className="text-link" onClick={() => openExternal("https://www.mycoverage.my/")}>Semak dengan penyedia <ExternalLink size={15} /></button><span className="small-disclaimer"><LockKeyhole size={13} /> Kami bukan ejen / penasihat kewangan.</span></div>
     </div>
   );
@@ -332,7 +349,31 @@ function VideoModal({ onClose }: { onClose: () => void }) {
 }
 
 function PlanSection({ savedItems, onReset }: { savedItems: string[]; onReset: () => void }) {
-  return <section id="plan" className="section plan-section"><div className="container"><div className="plan-header"><div><SectionEyebrow icon={Bookmark}>My Safety Net Plan</SectionEyebrow><h2>Plan anda, <em>di satu tempat.</em></h2><p>Simpan keputusan penting anda dalam pelayar ini. Log masuk OTP dan sync merentas peranti boleh ditambah untuk fasa seterusnya.</p></div><div className="privacy-note"><LockKeyhole size={15} /><span>Data dikekalkan secara minimum<br /><b>pada peranti ini sahaja</b></span></div></div><div className="plan-grid"><div className="plan-status-card"><div className="plan-status-top"><span className="status-orb"><ShieldCheck size={20} /></span><div><span className="muted-label">STATUS PLAN</span><h3>{savedItems.length ? "Anda sedang membina" : "Belum mula lagi"}</h3></div><span className="plan-score">{savedItems.length}/4</span></div><div className="plan-checks">{["EPF i-Saraan / Plus", "SOCSO Lindung Kendiri", "Pilihan perlindungan", "Dana kecemasan"].map((item, i) => <div key={item} className={savedItems.length > i ? "done" : ""}><span>{savedItems.length > i ? <Check size={13} /> : i + 1}</span><b>{item}</b><small>{savedItems.length > i ? "Disimpan" : "Belum disimpan"}</small></div>)}</div><div className="plan-actions"><button className="button button-primary" onClick={() => scrollToId("tools")}>Sambung kiraan <ArrowUpRight size={16} /></button>{savedItems.length > 0 && <button className="reset-button" onClick={onReset}><RotateCcw size={14} /> Reset</button>}</div></div><div className="saved-list"><div className="saved-list-head"><h3>Catatan anda</h3><span>{savedItems.length ? "Paling terkini" : "Akan muncul di sini"}</span></div>{savedItems.length ? savedItems.map((item, index) => <div className="saved-item" key={`${item}-${index}`}><span className="saved-bullet"><Check size={13} /></span><span>{item}</span><small>Baru disimpan</small></div>) : <div className="empty-plan"><Bookmark size={22} /><b>Plan yang terasa macam anda</b><p>Kira satu modul di atas, kemudian tekan “Simpan kiraan”.</p></div>}<div className="share-plan"><Share2 size={16} /><span>Kongsi ringkasan plan dengan keluarga?</span><button onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent("Saya sedang bina safety net kewangan saya dengan Lindung Gig. Jom cuba: ")}${encodeURIComponent(window.location.href)}`, "_blank"); toast.success("WhatsApp dibuka untuk dikongsi."); }}>WhatsApp <ArrowUpRight size={14} /></button></div></div></div></div></section>;
+  const [qrOpen, setQrOpen] = useState(false);
+  const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/#plan` : "https://lindunggig.my/#plan";
+  return (
+    <section id="plan" className="section plan-section">
+      <div className="container">
+        <div className="plan-header">
+          <div><SectionEyebrow icon={Bookmark}>My Safety Net Plan</SectionEyebrow><h2>Plan anda, <em>di satu tempat.</em></h2><p>Simpan keputusan penting anda dalam pelayar ini. Log masuk OTP dan sync merentas peranti boleh ditambah untuk fasa seterusnya.</p></div>
+          <div className="privacy-note"><LockKeyhole size={15} /><span>Data dikekalkan secara minimum<br /><b>pada peranti ini sahaja</b></span></div>
+        </div>
+        <div className="plan-grid">
+          <div className="plan-status-card">
+            <div className="plan-status-top"><span className="status-orb"><ShieldCheck size={20} /></span><div><span className="muted-label">STATUS PLAN</span><h3>{savedItems.length ? "Anda sedang membina" : "Belum mula lagi"}</h3></div><span className="plan-score">{savedItems.length}/4</span></div>
+            <div className="plan-checks">{["EPF i-Saraan / Plus", "SOCSO Lindung Kendiri", "Pilihan perlindungan", "Dana kecemasan"].map((item, i) => <div key={item} className={savedItems.length > i ? "done" : ""}><span>{savedItems.length > i ? <Check size={13} /> : i + 1}</span><b>{item}</b><small>{savedItems.length > i ? "Disimpan" : "Belum disimpan"}</small></div>)}</div>
+            <div className="plan-actions"><button className="button button-primary" onClick={() => scrollToId("tools")}>Sambung kiraan <ArrowUpRight size={16} /></button>{savedItems.length > 0 && <button className="reset-button" onClick={onReset}><RotateCcw size={14} /> Reset</button>}</div>
+          </div>
+          <div className="saved-list">
+            <div className="saved-list-head"><h3>Catatan anda</h3><span>{savedItems.length ? "Paling terkini" : "Akan muncul di sini"}</span></div>
+            {savedItems.length ? savedItems.map((item, index) => <div className="saved-item" key={`${item}-${index}`}><span className="saved-bullet"><Check size={13} /></span><span>{item}</span><small>Baru disimpan</small></div>) : <div className="empty-plan"><Bookmark size={22} /><b>Plan yang terasa macam anda</b><p>Kira satu modul di atas, kemudian tekan “Simpan kiraan”.</p></div>}
+            <div className="share-plan"><Share2 size={16} /><span>Kongsi ringkasan plan dengan keluarga?</span><button onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent("Saya sedang bina safety net kewangan saya dengan Lindung Gig. Jom cuba: ")}${encodeURIComponent(shareUrl)}`, "_blank"); toast.success("WhatsApp dibuka untuk dikongsi."); }}>WhatsApp <ArrowUpRight size={14} /></button><button className="qr-share-button" onClick={() => setQrOpen(true)}><QrCode size={14} /> QR code</button></div>
+          </div>
+        </div>
+      </div>
+      {qrOpen && <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="QR code plan"><div className="qr-modal"><button className="modal-close" onClick={() => setQrOpen(false)} aria-label="Tutup"><X size={18} /></button><div className="qr-icon"><QrCode size={20} /></div><h3>Kongsi plan anda</h3><p>Imbas dengan telefon lain untuk buka ringkasan plan ini.</p><img className="qr-image" src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(shareUrl)}`} alt="QR code untuk membuka Lindung Gig" /><span className="qr-url">{shareUrl}</span><button className="button button-dark" onClick={() => { navigator.clipboard?.writeText(shareUrl); toast.success("Pautan disalin."); }}>Salin pautan <Share2 size={15} /></button></div></div>}
+    </section>
+  );
 }
 
 export default function Home() {
