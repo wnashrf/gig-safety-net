@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertSafetyPlan, InsertUser, safetyPlans, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,25 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function getSafetyPlan(userId: number) {
+  const db = await getDb();
+  if (!db) return { items: [] as string[] };
+  const result = await db.select().from(safetyPlans).where(eq(safetyPlans.userId, userId)).limit(1);
+  if (!result[0]) return { items: [] as string[] };
+  try {
+    const items = JSON.parse(result[0].items);
+    return { items: Array.isArray(items) ? items.filter((item): item is string => typeof item === "string") : [] };
+  } catch {
+    return { items: [] as string[] };
+  }
+}
+
+export async function upsertSafetyPlan(userId: number, items: string[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const values: InsertSafetyPlan = { userId, items: JSON.stringify(items) };
+  await db.insert(safetyPlans).values(values).onDuplicateKeyUpdate({
+    set: { items: values.items, updatedAt: new Date() },
+  });
+  return { items };
+}

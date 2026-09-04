@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { startLogin } from "@/const";
+import { trpc } from "@/lib/trpc";
 import {
   ArrowDownUp,
   ArrowUpRight,
@@ -136,7 +139,7 @@ function MiniIcon({ icon: Icon, className = "" }: { icon: typeof Sparkles; class
   return <span className={`mini-icon ${className}`}><Icon size={16} strokeWidth={2.2} /></span>;
 }
 
-function AppHeader({ onMenu }: { onMenu: () => void }) {
+function AppHeader({ onMenu, user, isAuthenticated, onLogin, onLogout }: { onMenu: () => void; user: { name?: string | null; email?: string | null } | null; isAuthenticated: boolean; onLogin: () => void; onLogout: () => void }) {
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -149,7 +152,7 @@ function AppHeader({ onMenu }: { onMenu: () => void }) {
         </nav>
         <div className="header-actions">
           <button className="lang-btn" aria-label="Bahasa Malaysia aktif">BM <ChevronDown size={13} /></button>
-          <button className="header-save" onClick={() => scrollToId("plan")}><Bookmark size={16} /> <span>Simpan plan</span></button>
+          <button className="header-save" onClick={() => isAuthenticated ? scrollToId("plan") : onLogin()}><Bookmark size={16} /> <span>{isAuthenticated ? "Simpan plan" : "Log masuk"}</span></button>{isAuthenticated && <button className="user-chip" onClick={onLogout} title="Log keluar">{user?.name || user?.email || "Akaun anda"}<span>Log keluar</span></button>}
           <button className="mobile-menu" onClick={onMenu} aria-label="Buka menu"><Menu size={21} /></button>
         </div>
       </div>
@@ -157,16 +160,16 @@ function AppHeader({ onMenu }: { onMenu: () => void }) {
   );
 }
 
-function HeroIllustration() {
+function HeroIllustration({ displayName }: { displayName: string }) {
   return (
-    <div className="hero-visual" aria-label="Pratonton pelan keselamatan Along">
+    <div className="hero-visual" aria-label={`Pratonton pelan keselamatan ${displayName}`}>
       <div className="visual-orbit orbit-one" />
       <div className="visual-orbit orbit-two" />
-      <div className="visual-label label-top"><span className="status-dot" /> Pelan peribadi Along</div>
+      <div className="visual-label label-top"><span className="status-dot" /> Pelan peribadi {displayName}</div>
       <div className="phone-card">
         <div className="phone-topline"><span>KESELAMATAN ANDA</span><ShieldCheck size={16} /></div>
         <div className="phone-balance">RM 2,000 <small>/ bulan</small></div>
-        <div className="phone-meta"><span>Rider • 28 tahun</span><span className="green-text">Aktif</span></div>
+        <div className="phone-meta"><span>Profil peribadi • Selamat</span><span className="green-text">Aktif</span></div>
         <div className="ring-wrap"><div className="safety-ring"><div><strong>3</strong><span>lapisan</span></div></div></div>
         <div className="phone-lines">
           <div><span><i className="line-dot mint" /> EPF i-Saraan Plus</span><b>RM 209</b></div>
@@ -181,7 +184,7 @@ function HeroIllustration() {
   );
 }
 
-function Hero({ onVideo }: { onVideo: () => void }) {
+function Hero({ onVideo, displayName }: { onVideo: () => void; displayName: string }) {
   return (
     <section id="top" className="hero-section">
       <div className="container hero-grid">
@@ -195,7 +198,7 @@ function Hero({ onVideo }: { onVideo: () => void }) {
           </div>
           <div className="hero-trust"><span><LockKeyhole size={14} /> Tiada data dijual</span><span><Clock3 size={14} /> Siap dalam ~10 minit</span></div>
         </div>
-        <HeroIllustration />
+        <HeroIllustration displayName={displayName} />
       </div>
       <div className="hero-bottom-note"><span>Direka untuk rakyat Malaysia</span><span className="note-rule" /><span>BM dahulu • mudah difahami • boleh terus buat</span></div>
     </section>
@@ -218,13 +221,13 @@ function HowItWorks() {
   );
 }
 
-function DashboardSnapshot({ onOpenPlan }: { onOpenPlan: () => void }) {
+function DashboardSnapshot({ onOpenPlan, displayName }: { onOpenPlan: () => void; displayName: string }) {
   return (
     <section className="snapshot-section">
       <div className="container snapshot-grid">
-        <div className="snapshot-intro"><SectionEyebrow icon={BarChart3}>Satu pandangan yang tenang</SectionEyebrow><h2>Ini bukan tentang<br /><span>jadi kaya cepat.</span></h2><p>Ini tentang tahu apa yang boleh anda kawal — walaupun pendapatan berubah-ubah setiap bulan.</p><button className="text-link" onClick={onOpenPlan}>Lihat contoh plan Along <ArrowUpRight size={16} /></button></div>
+        <div className="snapshot-intro"><SectionEyebrow icon={BarChart3}>Satu pandangan yang tenang</SectionEyebrow><h2>Ini bukan tentang<br /><span>jadi kaya cepat.</span></h2><p>Ini tentang tahu apa yang boleh anda kawal — walaupun pendapatan berubah-ubah setiap bulan.</p><button className="text-link" onClick={onOpenPlan}>Lihat plan {displayName} <ArrowUpRight size={16} /></button></div>
         <div className="snapshot-card">
-          <div className="snapshot-card-head"><div><span className="muted-label">CONTOH PLAN</span><h3>Along, rider Grab</h3></div><span className="saved-tag"><Check size={13} /> Disimpan</span></div>
+          <div className="snapshot-card-head"><div><span className="muted-label">CONTOH PLAN</span><h3>{displayName}, profil anda</h3></div><span className="saved-tag"><Check size={13} /> Disimpan</span></div>
           <div className="snapshot-main"><div className="snapshot-ring"><div><span>RM</span><strong>2,000</strong><small>pendapatan</small></div></div><div className="snapshot-details"><div><span className="detail-label"><i className="dot dot-mint" /> Masa depan</span><strong>RM 209 <small>/ bulan</small></strong><em>EPF i-Saraan Plus</em></div><div><span className="detail-label"><i className="dot dot-coral" /> Perlindungan</span><strong>RM 13 <small>/ bulan</small></strong><em>SKSPS • tier RM1,050</em></div><div><span className="detail-label"><i className="dot dot-blue" /> Simpanan tenang</span><strong>RM 240 <small>/ bulan</small></strong><em>Target 6 bulan</em></div></div></div>
           <div className="snapshot-progress"><div className="progress-header"><span>Perjalanan plan</span><b>2 daripada 4 langkah</b></div><div className="progress-track"><span style={{ width: "50%" }} /></div></div>
         </div>
@@ -311,7 +314,7 @@ function InsuranceComparison({ selected, setSelected, onSave }: { selected: stri
   return (
     <div id="comparison" className="calculator-shell insurance-shell">
       <div className="calculator-intro"><div><SectionEyebrow icon={HeartPulse}>Insurans / Takaful • Banding dengan tenang</SectionEyebrow><h2>Pilih perlindungan yang<br /><em>melengkapkan anda.</em></h2><p>Jika SKSPS sudah lindungi kemalangan kerja, lihat pilihan medikal yang boleh isi ruang kosong — bukan bayar dua kali.</p></div><div className="source-chip mint-chip"><LockKeyhole size={15} /> Bukan ejen insurans</div></div>
-      <div className="recommend-banner"><span className="recommend-star"><Sparkles size={16} /></span><div><b>Logik untuk Along</b><p>Mulakan dengan perlindungan medikal dahulu kerana SKSPS sudah fokus kepada kemalangan semasa bekerja.</p></div><span className="recommend-pill">Padanan terbaik</span></div>
+      <div className="recommend-banner"><span className="recommend-star"><Sparkles size={16} /></span><div><b>Logik untuk anda</b><p>Mulakan dengan perlindungan medikal dahulu kerana SKSPS sudah fokus kepada kemalangan semasa bekerja.</p></div><span className="recommend-pill">Padanan terbaik</span></div>
       <div className="comparison-controls"><div className="filter-group"><SlidersHorizontal size={14} /><span>Penapis:</span><button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>Semua</button><button className={filter === "medical" ? "active" : ""} onClick={() => setFilter("medical")}>Fokus medikal</button><button className={filter === "accident" ? "active" : ""} onClick={() => setFilter("accident")}>Kemalangan / rider</button></div><label className="sort-control"><ArrowDownUp size={14} /><span>Susun</span><select value={sort} onChange={(e) => setSort(e.target.value)}><option value="coverage">Coverage paling luas</option><option value="premium">Premium terendah</option></select></label></div><div className="comparison-table-wrap"><div className="comparison-labels"><span>Produk rujukan</span><span>Premium</span><span>Fokus perlindungan</span><span>Hospital</span><span>Status</span><span /></div>{filteredProducts.map((product) => { const Icon = product.icon; const isSelected = selected === product.id; return <button key={product.id} className={`comparison-row ${isSelected ? "selected" : ""}`} onClick={() => setSelected(product.id)}><span className="product-cell"><span className={`product-icon ${product.tone}`}><Icon size={17} /></span><span><b>{product.name}</b><small>{product.short}</small></span></span><span className="table-value"><strong>RM {product.premiumValue}*</strong><small className="table-subnote">anggaran bulanan</small></span><span className="table-value">{product.coverage}</span><span className="table-value">{product.hospital}</span><span className="table-value"><span className={`status-pill ${isSelected ? "chosen" : "pending"}`}>{isSelected ? <><Check size={12} /> Dipilih</> : product.tag}</span></span><span className="row-chevron"><ChevronRight size={17} /></span></button> })}</div>
       <div className="rubric-note"><CircleHelp size={15} /><p><b>Kenapa ada “semak”?</b> Harga contoh di atas hanyalah anggaran prototaip; jumlah perlindungan dan proses tuntutan berubah mengikut produk. Kami hanya tunjukkan maklumat yang perlu disahkan daripada quote / PDS semasa sebelum anda membuat keputusan.</p></div>
       <div className="insurance-actions"><button className="button button-dark" onClick={() => onSave(`Insurans: ${insuranceProducts.find((p) => p.id === selected)?.name}`)}>Simpan pilihan <Bookmark size={15} /></button><button className="text-link" onClick={() => openExternal("https://www.mycoverage.my/")}>Semak dengan penyedia <ExternalLink size={15} /></button><span className="small-disclaimer"><LockKeyhole size={13} /> Kami bukan ejen / penasihat kewangan.</span></div>
@@ -414,21 +417,21 @@ function VideoModal({ onClose }: { onClose: () => void }) {
     </div>
   </div>;
 }
-function PlanSection({ savedItems, onReset, planItems, completedPlanItems }: { savedItems: string[]; onReset: () => void; planItems: { label: string; key: string; done: boolean }[]; completedPlanItems: number }) {
+function PlanSection({ savedItems, onReset, planItems, completedPlanItems, isAuthenticated, onLogin, displayName }: { savedItems: string[]; onReset: () => void; planItems: { label: string; key: string; done: boolean }[]; completedPlanItems: number; isAuthenticated: boolean; onLogin: () => void; displayName: string }) {
   const [qrOpen, setQrOpen] = useState(false);
   const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/#plan` : "https://lindunggig.my/#plan";
   return (
     <section id="plan" className="section plan-section">
       <div className="container">
         <div className="plan-header">
-          <div><SectionEyebrow icon={Bookmark}>My Safety Net Plan</SectionEyebrow><h2>Plan anda, <em>di satu tempat.</em></h2><p>Simpan keputusan penting anda dalam pelayar ini. Log masuk OTP dan sync merentas peranti boleh ditambah untuk fasa seterusnya.</p></div>
-          <div className="privacy-note"><LockKeyhole size={15} /><span>Data dikekalkan secara minimum<br /><b>pada peranti ini sahaja</b></span></div>
+          <div><SectionEyebrow icon={Bookmark}>My Safety Net Plan</SectionEyebrow><h2>Plan anda, <em>di satu tempat.</em></h2><p>{isAuthenticated ? `Simpan keputusan penting anda, ${displayName}, pada akaun peribadi anda.` : "Log masuk untuk menyimpan kiraan dan menyegerakkan plan merentas peranti."}</p></div>
+          <div className="privacy-note"><LockKeyhole size={15} /><span>{isAuthenticated ? "Plan disimpan secara peribadi" : "Belum disimpan"}<br /><b>{isAuthenticated ? "Akaun anda sahaja" : "Log masuk untuk simpan"}</b></span></div>
         </div>
         <div className="plan-grid">
-          <div className="plan-status-card">
+          <div className="plan-status-card">{!isAuthenticated && <div className="auth-plan-banner"><LockKeyhole size={15} /><span><b>Plan ini hanya untuk akaun anda.</b><small>Log masuk supaya kiraan anda tidak bercampur dengan pengguna lain.</small></span><button onClick={onLogin}>Log masuk</button></div>}
             <div className="plan-status-top"><span className="status-orb"><ShieldCheck size={20} /></span><div><span className="muted-label">STATUS PLAN</span><h3>{completedPlanItems ? "Anda sedang membina" : "Belum mula lagi"}</h3></div><span className="plan-score">{completedPlanItems}/4</span></div>
             <div className="plan-checks">{planItems.map((item, i) => <div key={item.label} className={item.done ? "done" : ""}><span>{item.done ? <Check size={13} /> : i + 1}</span><b>{item.label}</b><small>{item.done ? "Disimpan" : "Belum disimpan"}</small></div>)}</div>
-            <div className="plan-actions"><button className="button button-primary" onClick={() => scrollToId("tools")}>Sambung kiraan <ArrowUpRight size={16} /></button>{savedItems.length > 0 && <button className="reset-button" onClick={onReset}><RotateCcw size={14} /> Reset</button>}</div>
+            <div className="plan-actions"><button className="button button-primary" onClick={() => isAuthenticated ? scrollToId("tools") : onLogin()}>{isAuthenticated ? "Sambung kiraan" : "Log masuk untuk simpan"} <ArrowUpRight size={16} /></button>{savedItems.length > 0 && <button className="reset-button" onClick={onReset}><RotateCcw size={14} /> Reset</button>}</div>
           </div>
           <div className="saved-list">
             <div className="saved-list-head"><h3>Catatan anda</h3><span>{savedItems.length ? "Paling terkini" : "Akan muncul di sini"}</span></div>
@@ -443,15 +446,23 @@ function PlanSection({ savedItems, onReset, planItems, completedPlanItems }: { s
 }
 
 export default function Home() {
+  const { user, loading: authLoading, isAuthenticated, logout } = useAuth();
+  const planQuery = trpc.safetyPlan.get.useQuery(undefined, { enabled: isAuthenticated, retry: false });
+  const savePlanMutation = trpc.safetyPlan.save.useMutation({ onSuccess: () => planQuery.refetch() });
   const [activeTool, setActiveTool] = useState<ToolKey>("epf");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [selectedInsurance, setSelectedInsurance] = useState("aia");
-  const [savedItems, setSavedItems] = useState<string[]>(() => {
-    try { return JSON.parse(localStorage.getItem("lindung-gig-plan") || "[]"); } catch { return []; }
-  });
+  const [savedItems, setSavedItems] = useState<string[]>([]);
+  const displayName = user?.name || user?.email?.split("@")[0] || "anda";
 
-  useEffect(() => { localStorage.setItem("lindung-gig-plan", JSON.stringify(savedItems)); }, [savedItems]);
+  useEffect(() => {
+    if (isAuthenticated && planQuery.data) setSavedItems(planQuery.data.items);
+    if (!isAuthenticated) setSavedItems([]);
+  }, [isAuthenticated, planQuery.data]);
+  useEffect(() => {
+    localStorage.removeItem("lindung-gig-plan");
+  }, []);
   const categoryFor = (label: string) => {
     const value = label.toLowerCase();
     if (value.startsWith("epf")) return "epf";
@@ -469,24 +480,35 @@ export default function Home() {
   const completedPlanItems = planItems.filter((item) => item.done).length;
   const savedCount = useMemo(() => Math.min(4, savedItems.length), [savedItems]);
   const saveItem = (label: string) => {
+    if (!isAuthenticated) { toast.info("Log masuk untuk menyimpan plan anda."); onLogin(); return; }
     const key = categoryFor(label);
-    setSavedItems((current) => [...current.filter((item) => categoryFor(item) !== key), label]);
-    toast.success("Disimpan dalam plan anda.");
+    const nextItems = [...savedItems.filter((item) => categoryFor(item) !== key), label];
+    setSavedItems(nextItems);
+    savePlanMutation.mutate({ items: nextItems });
+    toast.success("Disimpan dalam akaun anda.");
   };
-  const resetPlan = () => { setSavedItems([]); localStorage.removeItem("lindung-gig-plan"); toast.success("Plan direset pada peranti ini."); };
+  const resetPlan = () => {
+    if (!isAuthenticated) return;
+    setSavedItems([]);
+    savePlanMutation.mutate({ items: [] });
+    toast.success("Plan direset dalam akaun anda.");
+  };
   const changeTool = (key: ToolKey) => { setActiveTool(key); scrollToId("tools"); setMobileOpen(false); };
 
+  const onLogin = () => { if (typeof window !== "undefined") window.location.href = "/auth"; };
+  if (authLoading && !user) return <div className="auth-loading">Menyediakan ruang peribadi anda...</div>;
+
   return <div className="app-shell">
-    <AppHeader onMenu={() => setMobileOpen(!mobileOpen)} />
+    <AppHeader onMenu={() => setMobileOpen(!mobileOpen)} user={user} isAuthenticated={isAuthenticated} onLogin={onLogin} onLogout={() => { void logout(); }} />
     {mobileOpen && <div className="mobile-nav"><button onClick={() => { scrollToId("how-it-works"); setMobileOpen(false); }}>Cara ia bantu</button><button onClick={() => changeTool("epf")}>Kiraan</button><button onClick={() => { scrollToId("comparison"); setMobileOpen(false); }}>Perbandingan</button><button onClick={() => { scrollToId("plan"); setMobileOpen(false); }}>Plan saya</button></div>}
     <main>
-      <Hero onVideo={() => setVideoOpen(true)} />
+      <Hero onVideo={() => setVideoOpen(true)} displayName={displayName} />
       <div className="signal-strip"><div><span className="signal-number">1.8m</span><span>pekerja gig di Malaysia</span></div><i /><div><span className="signal-number">3</span><span>lapisan perlindungan</span></div><i /><div><span className="signal-number">10 min</span><span>untuk mula dengan jelas</span></div></div>
       <HowItWorks />
-      <DashboardSnapshot onOpenPlan={() => scrollToId("plan")} />
+      <DashboardSnapshot onOpenPlan={() => scrollToId("plan")} displayName={displayName} />
       <section id="tools" className="section tools-section"><div className="container"><div className="section-head tools-head"><div><SectionEyebrow icon={Calculator}>Alat kiraan peribadi</SectionEyebrow><h2>Angka yang masuk akal<br /><em>untuk hidup sebenar.</em></h2></div><p>Semua kiraan dibuat terus dalam pelayar. Tiada pendaftaran diperlukan untuk mula.</p></div><ToolTabs active={activeTool} setActive={setActiveTool} />{activeTool === "epf" && <EpfCalculator onSave={saveItem} />}{activeTool === "socso" && <SocsoCalculator onSave={saveItem} />}{activeTool === "insurance" && <InsuranceComparison selected={selectedInsurance} setSelected={setSelectedInsurance} onSave={saveItem} />}{activeTool === "emergency" && <EmergencyBuilder onSave={saveItem} />}</div></section>
       <section className="share-section"><div className="container share-grid"><div className="share-copy"><SectionEyebrow icon={Share2}>Cerita ini boleh sampai jauh</SectionEyebrow><h2>Hantar pada kawan<br /><em>satu shift.</em></h2><p>Video pendek, bahasa santai, mesej yang mudah diteruskan dalam group rider dan courier.</p><button className="button button-dark" onClick={() => setVideoOpen(true)}><Play size={15} fill="currentColor" /> Tonton & kongsi</button></div><div className="share-video-teaser" onClick={() => setVideoOpen(true)} role="button" tabIndex={0}><div className="teaser-avatar"><span className="teaser-hair" /><span className="teaser-face"><i /><i /><b /></span></div><div className="teaser-copy"><span>VIDEO 01:52 • BM SANTAI</span><b>“Masa depan pun<br />boleh ikut cara anda.”</b></div><span className="teaser-play"><Play size={19} fill="currentColor" /></span><span className="teaser-corner">WHATSAPP READY</span></div></div></section>
-      <PlanSection savedItems={savedItems.slice(0, savedCount)} planItems={planItems} completedPlanItems={completedPlanItems} onReset={resetPlan} />
+      <PlanSection savedItems={savedItems.slice(0, savedCount)} planItems={planItems} completedPlanItems={completedPlanItems} isAuthenticated={isAuthenticated} onLogin={onLogin} displayName={displayName} onReset={resetPlan} />
     </main>
     <footer className="site-footer"><div className="container footer-top"><Logo /><div className="footer-meta"><span>Platform panduan kewangan untuk pekerja gig Malaysia.</span><span className="footer-disclaimer"><CircleHelp size={13} /> Ini bukan nasihat kewangan, tawaran insurans atau portal rasmi kerajaan.</span></div><button className="back-top" onClick={() => scrollToId("top")} aria-label="Kembali ke atas"><ArrowUpRight size={18} /></button></div><div className="container footer-bottom"><span>© 2026 Lindung Gig • Prototaip PRD v1.0</span><span>EPF & PERKESO: semak maklumat rasmi sebelum bertindak.</span></div></footer>
     {videoOpen && <VideoModal onClose={() => setVideoOpen(false)} />}
