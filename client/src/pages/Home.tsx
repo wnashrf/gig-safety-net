@@ -455,7 +455,7 @@ export default function Home() {
   const categoryFor = (label: string) => {
     const value = label.toLowerCase();
     if (value.startsWith("epf")) return "epf";
-    if (value.startsWith("socso")) return "socso";
+    if (value.startsWith("socso") || value.startsWith("sksps") || value.includes("lindung kendiri")) return "socso";
     if (value.startsWith("insurans")) return "insurance";
     if (value.startsWith("dana kecemasan")) return "emergency";
     return label;
