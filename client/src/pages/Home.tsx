@@ -346,7 +346,7 @@ function EmergencyBuilder({ onSave }: { onSave: (label: string) => void }) {
       <div className="input-grid three"><label className="field"><span>Perbelanjaan asas bulanan</span><div className="input-wrap"><span>RM</span><input type="number" min={500} step={100} value={expenses} onChange={(e) => setExpenses(Math.max(0, Number(e.target.value) || 0))} /></div></label><label className="field"><span>Pendapatan bulanan</span><div className="input-wrap"><span>RM</span><input type="number" min={500} step={100} value={income} onChange={(e) => setIncome(Math.max(0, Number(e.target.value) || 0))} /></div></label><div className="field"><span>Pendapatan anda biasanya...</span><div className="segmented"><button type="button" className={regular ? "active" : ""} onClick={() => setRegular(true)}>Tetap</button><button type="button" className={!regular ? "active" : ""} onClick={() => setRegular(false)}>Berubah</button></div></div></div>
       <div className="horizon-block"><span>Berapa lama nak dilindungi?</span><div className="horizon-buttons">{[3, 6, 12].map((value) => <button key={value} className={horizon === value ? "active" : ""} onClick={() => setHorizon(value)}>{value} bulan{value === 6 && <b>Disaran</b>}</button>)}</div></div>
       <div className="emergency-result" aria-live="polite"><div className="target-number"><span className="muted-label">SASARAN ANDA</span><strong>{formatRM(target)}</strong><small>{horizon} bulan × {formatRM(safeExpenses)} belanja asas</small></div><div className="save-number"><span className="muted-label">CADANGAN SIMPAN</span><strong>{formatRM(monthlySave)}<small> / bulan</small></strong><span className="save-rate"><TrendingUp size={14} /> {Math.round(saveRate * 100)}% pendapatan</span></div><div className="time-number"><span className="muted-label">ANGGARAN SIAP</span><strong>{months} <small>bulan</small></strong><span>Jika konsisten</span></div></div>
-      <div className="fund-tracker"><div className="tracker-head"><div><span className="muted-label">CHECK-IN SIMPANAN</span><h3>{formatRM(progress)} <small>daripada {formatRM(target)}</small></h3></div><span className="tracker-percent">{Math.round(progressPct)}%</span></div><div className="progress-track large"><span style={{ width: `${progressPct}%` }} /></div><div className="tracker-input"><label>Sudah berapa terkumpul?</label><div className="input-wrap"><span>RM</span><input type="number" min={0} max={target} step={50} value={progress} onChange={(e) => setProgress(Math.min(target, Math.max(0, Number(e.target.value) || 0)))} /></div><button className="button button-dark" onClick={() => { onSave(`Dana kecemasan ${formatRM(target)}`); toast.success("Check-in disimpan pada peranti ini."); }}>Simpan check-in <Check size={15} /></button></div></div>
+      <div className="fund-tracker"><div className="tracker-head"><div><span className="muted-label">CHECK-IN SIMPANAN</span><h3>{formatRM(progress)} <small>daripada {formatRM(target)}</small></h3></div><span className="tracker-percent">{Math.round(progressPct)}%</span></div><div className="progress-track large"><span style={{ width: `${progressPct}%` }} /></div><div className="tracker-input"><label>Sudah berapa terkumpul?</label><div className="input-wrap"><span>RM</span><input type="number" min={0} max={target} step={50} value={progress} onChange={(e) => setProgress(Math.min(target, Math.max(0, Number(e.target.value) || 0)))} /></div><button className="button button-dark" onClick={() => { onSave(`Dana kecemasan ${formatRM(progress)} daripada ${formatRM(target)}`); toast.success("Check-in disimpan pada peranti ini."); }}>Simpan check-in <Check size={15} /></button></div></div>
       <div className="vehicles-block"><div className="vehicles-title"><div><span className="muted-label">TEMPAT YANG MUDAH DICAPAI</span><h3>Letak dana kecemasan di sini</h3></div><span className="tiny-note"><LockKeyhole size={13} /> Bukan pelaburan jangka panjang</span></div><div className="vehicles-grid">{vehicles.map(({ icon: Icon, name, tag, tone, pro, con }) => <div className="vehicle-card" key={name}><div className={`vehicle-icon ${tone}`}><Icon size={17} /></div><div className="vehicle-name"><b>{name}</b><span>{tag}</span></div><p><strong>+ </strong>{pro}<br /><strong>− </strong>{con}</p></div>)}</div></div>
     </div>
   );
@@ -414,7 +414,7 @@ function VideoModal({ onClose }: { onClose: () => void }) {
     </div>
   </div>;
 }
-function PlanSection({ savedItems, onReset }: { savedItems: string[]; onReset: () => void }) {
+function PlanSection({ savedItems, onReset, planItems, completedPlanItems }: { savedItems: string[]; onReset: () => void; planItems: { label: string; key: string; done: boolean }[]; completedPlanItems: number }) {
   const [qrOpen, setQrOpen] = useState(false);
   const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/#plan` : "https://lindunggig.my/#plan";
   return (
@@ -426,8 +426,8 @@ function PlanSection({ savedItems, onReset }: { savedItems: string[]; onReset: (
         </div>
         <div className="plan-grid">
           <div className="plan-status-card">
-            <div className="plan-status-top"><span className="status-orb"><ShieldCheck size={20} /></span><div><span className="muted-label">STATUS PLAN</span><h3>{savedItems.length ? "Anda sedang membina" : "Belum mula lagi"}</h3></div><span className="plan-score">{savedItems.length}/4</span></div>
-            <div className="plan-checks">{["EPF i-Saraan / Plus", "SOCSO Lindung Kendiri", "Pilihan perlindungan", "Dana kecemasan"].map((item, i) => <div key={item} className={savedItems.length > i ? "done" : ""}><span>{savedItems.length > i ? <Check size={13} /> : i + 1}</span><b>{item}</b><small>{savedItems.length > i ? "Disimpan" : "Belum disimpan"}</small></div>)}</div>
+            <div className="plan-status-top"><span className="status-orb"><ShieldCheck size={20} /></span><div><span className="muted-label">STATUS PLAN</span><h3>{completedPlanItems ? "Anda sedang membina" : "Belum mula lagi"}</h3></div><span className="plan-score">{completedPlanItems}/4</span></div>
+            <div className="plan-checks">{planItems.map((item, i) => <div key={item.label} className={item.done ? "done" : ""}><span>{item.done ? <Check size={13} /> : i + 1}</span><b>{item.label}</b><small>{item.done ? "Disimpan" : "Belum disimpan"}</small></div>)}</div>
             <div className="plan-actions"><button className="button button-primary" onClick={() => scrollToId("tools")}>Sambung kiraan <ArrowUpRight size={16} /></button>{savedItems.length > 0 && <button className="reset-button" onClick={onReset}><RotateCcw size={14} /> Reset</button>}</div>
           </div>
           <div className="saved-list">
@@ -452,9 +452,25 @@ export default function Home() {
   });
 
   useEffect(() => { localStorage.setItem("lindung-gig-plan", JSON.stringify(savedItems)); }, [savedItems]);
+  const categoryFor = (label: string) => {
+    const value = label.toLowerCase();
+    if (value.startsWith("epf")) return "epf";
+    if (value.startsWith("socso")) return "socso";
+    if (value.startsWith("insurans")) return "insurance";
+    if (value.startsWith("dana kecemasan")) return "emergency";
+    return label;
+  };
+  const planItems = [
+    { label: "EPF i-Saraan / Plus", key: "epf" },
+    { label: "SOCSO Lindung Kendiri", key: "socso" },
+    { label: "Pilihan perlindungan", key: "insurance" },
+    { label: "Dana kecemasan", key: "emergency" },
+  ].map((item) => ({ ...item, done: savedItems.some((saved) => categoryFor(saved) === item.key) }));
+  const completedPlanItems = planItems.filter((item) => item.done).length;
   const savedCount = useMemo(() => Math.min(4, savedItems.length), [savedItems]);
   const saveItem = (label: string) => {
-    setSavedItems((current) => current.some((item) => item.startsWith(label.split(" ")[0])) ? current : [...current, label]);
+    const key = categoryFor(label);
+    setSavedItems((current) => [...current.filter((item) => categoryFor(item) !== key), label]);
     toast.success("Disimpan dalam plan anda.");
   };
   const resetPlan = () => { setSavedItems([]); localStorage.removeItem("lindung-gig-plan"); toast.success("Plan direset pada peranti ini."); };
@@ -470,7 +486,7 @@ export default function Home() {
       <DashboardSnapshot onOpenPlan={() => scrollToId("plan")} />
       <section id="tools" className="section tools-section"><div className="container"><div className="section-head tools-head"><div><SectionEyebrow icon={Calculator}>Alat kiraan peribadi</SectionEyebrow><h2>Angka yang masuk akal<br /><em>untuk hidup sebenar.</em></h2></div><p>Semua kiraan dibuat terus dalam pelayar. Tiada pendaftaran diperlukan untuk mula.</p></div><ToolTabs active={activeTool} setActive={setActiveTool} />{activeTool === "epf" && <EpfCalculator onSave={saveItem} />}{activeTool === "socso" && <SocsoCalculator onSave={saveItem} />}{activeTool === "insurance" && <InsuranceComparison selected={selectedInsurance} setSelected={setSelectedInsurance} onSave={saveItem} />}{activeTool === "emergency" && <EmergencyBuilder onSave={saveItem} />}</div></section>
       <section className="share-section"><div className="container share-grid"><div className="share-copy"><SectionEyebrow icon={Share2}>Cerita ini boleh sampai jauh</SectionEyebrow><h2>Hantar pada kawan<br /><em>satu shift.</em></h2><p>Video pendek, bahasa santai, mesej yang mudah diteruskan dalam group rider dan courier.</p><button className="button button-dark" onClick={() => setVideoOpen(true)}><Play size={15} fill="currentColor" /> Tonton & kongsi</button></div><div className="share-video-teaser" onClick={() => setVideoOpen(true)} role="button" tabIndex={0}><div className="teaser-avatar"><span className="teaser-hair" /><span className="teaser-face"><i /><i /><b /></span></div><div className="teaser-copy"><span>VIDEO 01:52 • BM SANTAI</span><b>“Masa depan pun<br />boleh ikut cara anda.”</b></div><span className="teaser-play"><Play size={19} fill="currentColor" /></span><span className="teaser-corner">WHATSAPP READY</span></div></div></section>
-      <PlanSection savedItems={savedItems.slice(0, savedCount)} onReset={resetPlan} />
+      <PlanSection savedItems={savedItems.slice(0, savedCount)} planItems={planItems} completedPlanItems={completedPlanItems} onReset={resetPlan} />
     </main>
     <footer className="site-footer"><div className="container footer-top"><Logo /><div className="footer-meta"><span>Platform panduan kewangan untuk pekerja gig Malaysia.</span><span className="footer-disclaimer"><CircleHelp size={13} /> Ini bukan nasihat kewangan, tawaran insurans atau portal rasmi kerajaan.</span></div><button className="back-top" onClick={() => scrollToId("top")} aria-label="Kembali ke atas"><ArrowUpRight size={18} /></button></div><div className="container footer-bottom"><span>© 2026 Lindung Gig • Prototaip PRD v1.0</span><span>EPF & PERKESO: semak maklumat rasmi sebelum bertindak.</span></div></footer>
     {videoOpen && <VideoModal onClose={() => setVideoOpen(false)} />}
