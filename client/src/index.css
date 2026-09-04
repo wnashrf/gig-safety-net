@@ -300,3 +300,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .video-replay { position: absolute; z-index: 4; left: 50%; bottom: 66px; display: inline-flex; align-items: center; gap: 5px; transform: translateX(-50%); padding: 7px 10px; border: 1px solid rgba(255,255,255,.4); border-radius: 99px; background: rgba(17,43,58,.72); color: white; font-size: 9px; font-weight: 900; cursor: pointer; }
 @keyframes avatarFloat { 0%, 100% { transform: translateY(0) rotate(3deg); } 50% { transform: translateY(-7px) rotate(1deg); } }
 @keyframes grainPulse { 0%, 100% { opacity: .15; } 50% { opacity: .3; } }
+
+.video-volume { position: absolute; z-index: 4; right: 18px; bottom: 42px; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid rgba(255,255,255,.35); border-radius: 50%; background: rgba(17,43,58,.55); color: white; cursor: pointer; }
+.video-volume:hover { background: rgba(17,43,58,.82); }

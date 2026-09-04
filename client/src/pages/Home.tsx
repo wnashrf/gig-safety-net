@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownUp,
   ArrowUpRight,
@@ -32,6 +32,8 @@ import {
   SlidersHorizontal,
   TrendingUp,
   Umbrella,
+  Volume2,
+  VolumeX,
   UserRound,
   Wallet,
   X,
@@ -348,40 +350,62 @@ function EmergencyBuilder({ onSave }: { onSave: (label: string) => void }) {
 function VideoModal({ onClose }: { onClose: () => void }) {
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [muted, setMuted] = useState(false);
   const durationSeconds = 112;
+  const voiceRef = useRef<HTMLAudioElement>(null);
+  const musicRef = useRef<HTMLAudioElement>(null);
+
+  const startAudio = () => {
+    const voice = voiceRef.current;
+    const music = musicRef.current;
+    if (voice) { voice.volume = muted ? 0 : 1; void voice.play().catch(() => undefined); }
+    if (music) { music.volume = muted ? 0 : 0.18; void music.play().catch(() => undefined); }
+  };
 
   useEffect(() => {
-    if (!playing) return;
+    if (playing) startAudio();
+    else { voiceRef.current?.pause(); musicRef.current?.pause(); }
+    return () => { voiceRef.current?.pause(); musicRef.current?.pause(); };
+  }, [playing]);
+
+  useEffect(() => {
     const timer = window.setInterval(() => {
+      if (!playing) return;
       setProgress((current) => {
-        if (current >= durationSeconds) {
-          setPlaying(false);
-          return durationSeconds;
-        }
+        if (current >= durationSeconds) { setPlaying(false); return durationSeconds; }
         return current + 1;
       });
     }, 1000);
     return () => window.clearInterval(timer);
   }, [playing]);
 
+  useEffect(() => {
+    if (voiceRef.current) voiceRef.current.volume = muted ? 0 : 1;
+    if (musicRef.current) musicRef.current.volume = muted ? 0 : 0.18;
+  }, [muted]);
+
   const elapsed = `${Math.floor(progress / 60).toString().padStart(2, "0")}:${(progress % 60).toString().padStart(2, "0")}`;
   const togglePlayback = () => {
     if (progress >= durationSeconds) setProgress(0);
+    if (!playing) startAudio();
     setPlaying((current) => !current);
   };
 
   return <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Video pengenalan Lindung Gig">
     <div className="video-modal">
+      <audio ref={voiceRef} src="/manus-storage/lindung-gig-voice_4332a735.wav" preload="auto" aria-label="AI voiceover Bahasa Malaysia" />
+      <audio ref={musicRef} src="/manus-storage/lindung-gig-music_7d06c4d3.wav" preload="auto" loop aria-label="Muzik latar instrumental" />
       <button className="modal-close" onClick={onClose} aria-label="Tutup"><X size={18} /></button>
       <div className={`video-frame ${playing ? "is-playing" : "is-paused"}`}>
         <div className="video-grain" />
         <div className="avatar-head"><span className="avatar-hair" /><span className="avatar-face"><i /><i /><b /></span></div>
-        <div className="video-caption"><span>{playing ? "HEYGEN • SEDANG DIMAINKAN" : progress >= durationSeconds ? "VIDEO SELESAI" : "HEYGEN • DIJEDA"}</span><h3>“Sebagai rider atau freelancer,<br />macam mana nak lindungi masa depan kamu?”</h3><p>Video ringkas untuk mula faham 3 lapisan keselamatan anda.</p></div>
+        <div className="video-caption"><span>{playing ? "AI VOICEOVER • SEDANG DIMAINKAN" : progress >= durationSeconds ? "VIDEO SELESAI" : "AI VOICEOVER • DIJEDA"}</span><h3>“Sebagai rider atau freelancer,<br />macam mana nak lindungi masa depan kamu?”</h3><p>Suara Bahasa Malaysia dengan muzik latar lembut untuk mula faham 3 lapisan keselamatan anda.</p></div>
         <button className="video-play" onClick={togglePlayback} aria-label={playing ? "Jeda video" : "Mainkan video"}>{playing ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}</button>
+        <button className="video-volume" onClick={() => setMuted((current) => !current)} aria-label={muted ? "Hidupkan audio" : "Senyapkan audio"}>{muted ? <VolumeX size={16} /> : <Volume2 size={16} />}</button>
         <div className="video-progress-wrap"><div className="video-progress-track"><span style={{ width: `${(progress / durationSeconds) * 100}%` }} /></div><span>{elapsed} / 01:52</span></div>
         {progress >= durationSeconds && <button className="video-replay" onClick={() => { setProgress(0); setPlaying(true); }}><RotateCcw size={13} /> Main semula</button>}
       </div>
-      <div className="video-modal-foot"><div><b>{playing ? "Video sedang berjalan" : "Tekan play untuk sambung"}</b><span>Anda boleh jeda atau main semula bila-bila masa.</span></div><button className="button whatsapp-button" onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent("Jom semak keselamatan kewangan anda di Lindung Gig: ")}${encodeURIComponent(window.location.href)}`, "_blank"); toast.success("WhatsApp dibuka untuk dikongsi."); }}><Share2 size={16} /> Kongsi di WhatsApp</button></div>
+      <div className="video-modal-foot"><div><b>{playing ? "AI voiceover + muzik sedang berjalan" : "Tekan play untuk sambung"}</b><span>Suara BM dijana AI • muzik latar instrumental • boleh senyap bila-bila masa.</span></div><button className="button whatsapp-button" onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent("Jom semak keselamatan kewangan anda di Lindung Gig: ")}${encodeURIComponent(window.location.href)}`, "_blank"); toast.success("WhatsApp dibuka untuk dikongsi."); }}><Share2 size={16} /> Kongsi di WhatsApp</button></div>
     </div>
   </div>;
 }
