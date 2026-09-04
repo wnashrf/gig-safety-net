@@ -288,3 +288,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .qr-url { display: block; overflow: hidden; margin-bottom: 17px; color: #93a09d; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .qr-modal .button { width: 100%; }
 @media (max-width: 700px) { .comparison-controls { align-items: stretch; flex-direction: column; } .filter-group { flex-wrap: wrap; } .sort-control { justify-content: space-between; } .hover-hint { display: none; } .share-plan { flex-wrap: wrap; } .share-plan button { margin-left: 0; } .share-plan button:first-of-type { margin-left: auto; } }
+
+.video-frame.is-playing .avatar-head { animation: avatarFloat 2.5s ease-in-out infinite; }
+.video-frame.is-playing .video-grain { animation: grainPulse 1.5s ease-in-out infinite; }
+.video-frame.is-paused .video-grain { opacity: .35; }
+.video-progress-wrap { position: absolute; z-index: 3; left: 19px; right: 19px; bottom: 17px; display: flex; align-items: center; gap: 9px; }
+.video-progress-wrap > span { color: rgba(255,255,255,.84); font-size: 8px; font-weight: 900; white-space: nowrap; }
+.video-progress-track { height: 4px; flex: 1; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.3); }
+.video-progress-track span { display: block; height: 100%; border-radius: inherit; background: var(--coral); transition: width .25s linear; }
+.video-duration { bottom: 43px; }
+.video-replay { position: absolute; z-index: 4; left: 50%; bottom: 66px; display: inline-flex; align-items: center; gap: 5px; transform: translateX(-50%); padding: 7px 10px; border: 1px solid rgba(255,255,255,.4); border-radius: 99px; background: rgba(17,43,58,.72); color: white; font-size: 9px; font-weight: 900; cursor: pointer; }
+@keyframes avatarFloat { 0%, 100% { transform: translateY(0) rotate(3deg); } 50% { transform: translateY(-7px) rotate(1deg); } }
+@keyframes grainPulse { 0%, 100% { opacity: .15; } 50% { opacity: .3; } }

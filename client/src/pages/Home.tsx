@@ -19,6 +19,7 @@ import {
   Landmark,
   LockKeyhole,
   Menu,
+  Pause,
   PiggyBank,
   QrCode,
   Play,
@@ -345,9 +346,45 @@ function EmergencyBuilder({ onSave }: { onSave: (label: string) => void }) {
 }
 
 function VideoModal({ onClose }: { onClose: () => void }) {
-  return <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Video pengenalan Lindung Gig"><div className="video-modal"><button className="modal-close" onClick={onClose} aria-label="Tutup"><X size={18} /></button><div className="video-frame"><div className="video-grain" /><div className="avatar-head"><span className="avatar-hair" /><span className="avatar-face"><i /><i /><b /></span></div><div className="video-caption"><span>HEYGEN • BM santai</span><h3>“Sebagai rider atau freelancer,<br />macam mana nak lindungi masa depan kamu?”</h3><p>Video ringkas untuk mula faham 3 lapisan keselamatan anda.</p></div><button className="video-play"><Play size={22} fill="currentColor" /></button><span className="video-duration">01:52</span></div><div className="video-modal-foot"><div><b>Kongsi dengan kawan satu shift</b><span>Link ini direka untuk WhatsApp.</span></div><button className="button whatsapp-button" onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent("Jom semak keselamatan kewangan anda di Lindung Gig: ")}${encodeURIComponent(window.location.href)}`, "_blank"); toast.success("WhatsApp dibuka untuk dikongsi."); }}><Share2 size={16} /> Kongsi di WhatsApp</button></div></div></div>;
-}
+  const [playing, setPlaying] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const durationSeconds = 112;
 
+  useEffect(() => {
+    if (!playing) return;
+    const timer = window.setInterval(() => {
+      setProgress((current) => {
+        if (current >= durationSeconds) {
+          setPlaying(false);
+          return durationSeconds;
+        }
+        return current + 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [playing]);
+
+  const elapsed = `${Math.floor(progress / 60).toString().padStart(2, "0")}:${(progress % 60).toString().padStart(2, "0")}`;
+  const togglePlayback = () => {
+    if (progress >= durationSeconds) setProgress(0);
+    setPlaying((current) => !current);
+  };
+
+  return <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Video pengenalan Lindung Gig">
+    <div className="video-modal">
+      <button className="modal-close" onClick={onClose} aria-label="Tutup"><X size={18} /></button>
+      <div className={`video-frame ${playing ? "is-playing" : "is-paused"}`}>
+        <div className="video-grain" />
+        <div className="avatar-head"><span className="avatar-hair" /><span className="avatar-face"><i /><i /><b /></span></div>
+        <div className="video-caption"><span>{playing ? "HEYGEN • SEDANG DIMAINKAN" : progress >= durationSeconds ? "VIDEO SELESAI" : "HEYGEN • DIJEDA"}</span><h3>“Sebagai rider atau freelancer,<br />macam mana nak lindungi masa depan kamu?”</h3><p>Video ringkas untuk mula faham 3 lapisan keselamatan anda.</p></div>
+        <button className="video-play" onClick={togglePlayback} aria-label={playing ? "Jeda video" : "Mainkan video"}>{playing ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}</button>
+        <div className="video-progress-wrap"><div className="video-progress-track"><span style={{ width: `${(progress / durationSeconds) * 100}%` }} /></div><span>{elapsed} / 01:52</span></div>
+        {progress >= durationSeconds && <button className="video-replay" onClick={() => { setProgress(0); setPlaying(true); }}><RotateCcw size={13} /> Main semula</button>}
+      </div>
+      <div className="video-modal-foot"><div><b>{playing ? "Video sedang berjalan" : "Tekan play untuk sambung"}</b><span>Anda boleh jeda atau main semula bila-bila masa.</span></div><button className="button whatsapp-button" onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent("Jom semak keselamatan kewangan anda di Lindung Gig: ")}${encodeURIComponent(window.location.href)}`, "_blank"); toast.success("WhatsApp dibuka untuk dikongsi."); }}><Share2 size={16} /> Kongsi di WhatsApp</button></div>
+    </div>
+  </div>;
+}
 function PlanSection({ savedItems, onReset }: { savedItems: string[]; onReset: () => void }) {
   const [qrOpen, setQrOpen] = useState(false);
   const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/#plan` : "https://lindunggig.my/#plan";
