@@ -200,7 +200,7 @@ function Hero({ onVideo, displayName }: { onVideo: () => void; displayName: stri
           <p className="hero-lede">Satu tempat untuk faham, kira dan mula bina perlindungan kewangan — khas untuk rider, penghantar, freelancer dan yang bekerja sendiri.</p>
           <div className="hero-actions">
             <button className="button button-primary" onClick={() => scrollToId("tools")}>Mulakan dengan kiraan <ArrowUpRight size={17} /></button>
-            <button className="button button-quiet" onClick={onVideo}><span className="play-icon"><Play size={13} fill="currentColor" /></span> Tonton video 1:52</button>
+            <button className="button button-quiet" onClick={onVideo}><span className="play-icon"><Play size={13} fill="currentColor" /></span> Tonton video 0:57</button>
           </div>
           <div className="hero-trust"><span><LockKeyhole size={14} /> Tiada data dijual</span><span><Clock3 size={14} /> Siap dalam ~10 minit</span></div>
         </div>
@@ -369,7 +369,7 @@ function VideoModal({ onClose }: { onClose: () => void }) {
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
   const [muted, setMuted] = useState(false);
-  const durationSeconds = 112;
+  const durationSeconds = 57;
   const voiceRef = useRef<HTMLAudioElement>(null);
   const musicRef = useRef<HTMLAudioElement>(null);
 
@@ -411,19 +411,19 @@ function VideoModal({ onClose }: { onClose: () => void }) {
 
   return <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Video pengenalan Lindung Gig">
     <div className="video-modal">
-      <audio ref={voiceRef} src="/manus-storage/lindung-gig-voice_4332a735.wav" preload="auto" aria-label="AI voiceover Bahasa Malaysia" />
+      <audio ref={voiceRef} src="/manus-storage/lindung-gig-heygen-voice_06ca11ea.wav" preload="auto" aria-label="AI avatar voiceover Bahasa Malaysia" />
       <audio ref={musicRef} src="/manus-storage/lindung-gig-music_7d06c4d3.wav" preload="auto" loop aria-label="Muzik latar instrumental" />
       <button className="modal-close" onClick={onClose} aria-label="Tutup"><X size={18} /></button>
       <div className={`video-frame ${playing ? "is-playing" : "is-paused"}`}>
         <div className="video-grain" />
         <div className="avatar-head"><span className="avatar-hair" /><span className="avatar-face"><i /><i /><b /></span></div>
-        <div className="video-caption"><span>{playing ? "AI VOICEOVER • SEDANG DIMAINKAN" : progress >= durationSeconds ? "VIDEO SELESAI" : "AI VOICEOVER • DIJEDA"}</span><h3>“Sebagai rider atau freelancer,<br />macam mana nak lindungi masa depan kamu?”</h3><p>Suara Bahasa Malaysia dengan muzik latar lembut untuk mula faham 3 lapisan keselamatan anda.</p></div>
+        <div className="video-caption"><span>{playing ? "AI AVATAR • BM SANTAI • SEDANG DIMAINKAN" : progress >= durationSeconds ? "VIDEO SELESAI" : "AI AVATAR • DIJEDA"}</span><h3>“Sebagai rider atau freelancer,<br />macam mana nak lindungi masa depan kamu?”</h3><p>Video penerangan pendek untuk komuniti rider, courier dan freelancer — mudah dikongsi di WhatsApp.</p></div>
         <button className="video-play" onClick={togglePlayback} aria-label={playing ? "Jeda video" : "Mainkan video"}>{playing ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}</button>
         <button className="video-volume" onClick={() => setMuted((current) => !current)} aria-label={muted ? "Hidupkan audio" : "Senyapkan audio"}>{muted ? <VolumeX size={16} /> : <Volume2 size={16} />}</button>
-        <div className="video-progress-wrap"><div className="video-progress-track"><span style={{ width: `${(progress / durationSeconds) * 100}%` }} /></div><span>{elapsed} / 01:52</span></div>
+        <div className="video-progress-wrap"><div className="video-progress-track"><span style={{ width: `${(progress / durationSeconds) * 100}%` }} /></div><span>{elapsed} / 00:57</span></div>
         {progress >= durationSeconds && <button className="video-replay" onClick={() => { setProgress(0); setPlaying(true); }}><RotateCcw size={13} /> Main semula</button>}
       </div>
-      <div className="video-modal-foot"><div><b>{playing ? "AI voiceover + muzik sedang berjalan" : "Tekan play untuk sambung"}</b><span>Suara BM dijana AI • muzik latar instrumental • boleh senyap bila-bila masa.</span></div><button className="button whatsapp-button" onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent("Jom semak keselamatan kewangan anda di Lindung Gig: ")}${encodeURIComponent(window.location.href)}`, "_blank"); toast.success("WhatsApp dibuka untuk dikongsi."); }}><Share2 size={16} /> Kongsi di WhatsApp</button></div>
+      <div className="video-modal-foot"><div><b>{playing ? "AI avatar + muzik sedang berjalan" : "Tekan play untuk sambung"}</b><span>Voiceover Bahasa Malaysia yang santai • topik EPF, SOCSO dan dana kecemasan • siap untuk dikongsi di WhatsApp.</span></div><button className="button whatsapp-button" onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent("Sebagai rider atau freelancer, jom lindungi masa depan kamu dengan Lindung Gig: ")}${encodeURIComponent(window.location.href)}`, "_blank"); toast.success("WhatsApp dibuka untuk dikongsi."); }}><Share2 size={16} /> Kongsi di WhatsApp</button></div>
     </div>
   </div>;
 }
@@ -559,7 +559,7 @@ export default function Home() {
       <HowItWorks />
       <DashboardSnapshot onOpenPlan={() => scrollToId("plan")} profile={profile} calculatorInputs={calculatorInputs} completedPlanItems={completedPlanItems} isAuthenticated={isAuthenticated} />
       <section id="tools" className="section tools-section"><div className="container"><div className="section-head tools-head"><div><SectionEyebrow icon={Calculator}>Alat kiraan peribadi</SectionEyebrow><h2>Angka yang masuk akal<br /><em>untuk hidup sebenar.</em></h2></div><p>Semua kiraan dibuat terus dalam pelayar. Tiada pendaftaran diperlukan untuk mula.</p></div><ToolTabs active={activeTool} setActive={setActiveTool} />{activeTool === "epf" && <EpfCalculator onSave={saveItem} initialInputs={calculatorInputs} onSync={syncCalculatorInputs} />}{activeTool === "socso" && <SocsoCalculator onSave={saveItem} initialInputs={calculatorInputs} onSync={syncCalculatorInputs} />}{activeTool === "insurance" && <InsuranceComparison selected={selectedInsurance} setSelected={(value) => { setSelectedInsurance(value); syncCalculatorInputs({ insuranceSelected: value }); }} onSave={saveItem} />}{activeTool === "emergency" && <EmergencyBuilder onSave={saveItem} initialInputs={calculatorInputs} onSync={syncCalculatorInputs} />}</div></section>
-      <section className="share-section"><div className="container share-grid"><div className="share-copy"><SectionEyebrow icon={Share2}>Cerita ini boleh sampai jauh</SectionEyebrow><h2>Hantar pada kawan<br /><em>satu shift.</em></h2><p>Video pendek, bahasa santai, mesej yang mudah diteruskan dalam group rider dan courier.</p><button className="button button-dark" onClick={() => setVideoOpen(true)}><Play size={15} fill="currentColor" /> Tonton & kongsi</button></div><div className="share-video-teaser" onClick={() => setVideoOpen(true)} role="button" tabIndex={0}><div className="teaser-avatar"><span className="teaser-hair" /><span className="teaser-face"><i /><i /><b /></span></div><div className="teaser-copy"><span>VIDEO 01:52 • BM SANTAI</span><b>“Masa depan pun<br />boleh ikut cara anda.”</b></div><span className="teaser-play"><Play size={19} fill="currentColor" /></span><span className="teaser-corner">WHATSAPP READY</span></div></div></section>
+      <section className="share-section"><div className="container share-grid"><div className="share-copy"><SectionEyebrow icon={Share2}>Cerita ini boleh sampai jauh</SectionEyebrow><h2>Hantar pada kawan<br /><em>satu shift.</em></h2><p>Video pendek, bahasa santai, mesej yang mudah diteruskan dalam group rider dan courier.</p><button className="button button-dark" onClick={() => setVideoOpen(true)}><Play size={15} fill="currentColor" /> Tonton & kongsi</button></div><div className="share-video-teaser" onClick={() => setVideoOpen(true)} role="button" tabIndex={0}><div className="teaser-avatar"><span className="teaser-hair" /><span className="teaser-face"><i /><i /><b /></span></div><div className="teaser-copy"><span>VIDEO 00:57 • AI AVATAR BM</span><b>“Sebagai rider atau freelancer,<br />macam mana nak lindungi masa depan kamu?”</b></div><span className="teaser-play"><Play size={19} fill="currentColor" /></span><span className="teaser-corner">WHATSAPP READY</span></div></div></section>
       <PlanSection savedItems={savedItems.slice(0, savedCount)} planItems={planItems} completedPlanItems={completedPlanItems} isAuthenticated={isAuthenticated} onLogin={onLogin} displayName={displayName} onReset={resetPlan} />{isAuthenticated && <section id="account-settings" className="section account-section"><div className="container"><AccountProfileSummary profile={profile} savedCount={savedItems.length} completedPlanItems={completedPlanItems} hasCalculatorData={Object.keys(calculatorInputs).some((key) => key !== "workerType")} /><AccountSettings profile={profile} onSave={(value) => profileMutation.mutate(value)} onExport={exportData} onDelete={requestDeleteAccount} saving={profileMutation.isPending} deleting={deleteMutation.isPending} /></div></section>}
     </main>
     <footer className="site-footer"><div className="container footer-top"><Logo /><div className="footer-meta"><span>Platform panduan kewangan untuk pekerja gig Malaysia.</span><span className="footer-disclaimer"><CircleHelp size={13} /> Ini bukan nasihat kewangan, tawaran insurans atau portal rasmi kerajaan.</span></div><button className="back-top" onClick={() => scrollToId("top")} aria-label="Kembali ke atas"><ArrowUpRight size={18} /></button></div><div className="container footer-bottom"><span>© 2026 Lindung Gig • Prototaip PRD v1.0</span><span>EPF & PERKESO: semak maklumat rasmi sebelum bertindak.</span></div></footer>
