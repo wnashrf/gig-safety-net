@@ -337,6 +337,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .auth-error { display: grid; gap: 3px; margin-top: 15px; padding: 10px 11px; border: 1px solid #f0cfc8; border-radius: 7px; background: #fff6f3; color: #a85d4e; font-size: 10px; line-height: 1.4; }
 .auth-error b { color: #8f4438; }
 .auth-login { width: 100%; height: 48px; justify-content: center; margin-top: 20px; border-radius: 8px; background: var(--navy); color: white; font-weight: 900; }
+.auth-signup-divider { display: flex; align-items: center; gap: 9px; margin: 18px 0 10px; color: #9aa6a1; font-size: 9px; }
+.auth-signup-divider::before, .auth-signup-divider::after { content: ""; height: 1px; flex: 1; background: #e3ebe6; }
+.auth-signup { display: inline-flex; align-items: center; justify-content: center; gap: 7px; width: 100%; height: 42px; border: 1px solid #bfdacc; border-radius: 8px; background: #f5fbf7; color: var(--navy); font-size: 11px; font-weight: 900; cursor: pointer; }
+.auth-signup:hover { background: #eaf7ef; border-color: #8fbea5; }
+.auth-completion { margin: 14px 0 0; color: #7e8e88; font-size: 9px; line-height: 1.5; }
+.auth-completion b { color: var(--navy); }
 .auth-note { display: flex; align-items: flex-start; gap: 6px; margin-top: 17px; color: #8b9995; font-size: 9px; line-height: 1.5; }
 .auth-orbit { position: absolute; border: 1px solid rgba(174,214,195,.55); border-radius: 50%; }
 .auth-orbit-one { width: 540px; height: 540px; top: -190px; right: -120px; }

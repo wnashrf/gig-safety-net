@@ -23,10 +23,13 @@ export default function AuthPage() {
         <h1 id="auth-title">Simpan plan anda,<br /><em>ikut hidup anda.</em></h1>
         <p className="auth-lede">Log masuk untuk menyimpan kiraan EPF, SOCSO, perlindungan dan dana kecemasan secara berasingan untuk akaun anda — bukan dikongsi dengan profil lain.</p>
         {error && <div className="auth-error" role="alert"><b>Log masuk tidak berjaya.</b><span>{error === "session" ? "Sesi log masuk tamat atau tidak sepadan. Cuba lagi." : "Ada masalah semasa menyambungkan akaun. Cuba lagi."}</span></div>}
-        <Button className="auth-login" onClick={() => startLogin()} disabled={loading}>
+        <Button className="auth-login" onClick={() => startLogin("signIn")} disabled={loading}>
           {loading ? "Menyemak akaun..." : "Log masuk dengan selamat"}
           <LockKeyhole size={16} />
         </Button>
+        <div className="auth-signup-divider"><span>Belum ada akaun?</span></div>
+        <button className="auth-signup" onClick={() => startLogin("signUp")} disabled={loading}>Daftar akaun baharu <Sparkles size={15} /></button>
+        <p className="auth-completion"><b>Selepas daftar:</b> anda akan kembali ke Lindung Gig untuk lengkapkan nama dan jenis kerja, kemudian terus ke ruang plan peribadi anda.</p>
         <p className="auth-note"><LockKeyhole size={13} /> Lindung Gig menggunakan aliran pengesahan akaun Manus yang selamat. Tiada kata laluan disimpan oleh aplikasi ini.</p>
       </section>
     </main>
