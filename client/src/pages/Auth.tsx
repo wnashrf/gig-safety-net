@@ -6,6 +6,7 @@ import { useEffect } from "react";
 
 export default function AuthPage() {
   const { user, loading } = useAuth();
+  const error = new URLSearchParams(window.location.search).get("error");
 
   useEffect(() => {
     if (!loading && user) window.location.href = "/";
@@ -21,6 +22,7 @@ export default function AuthPage() {
         <div className="auth-eyebrow"><Sparkles size={13} /> Lindung Gig • Akaun peribadi</div>
         <h1 id="auth-title">Simpan plan anda,<br /><em>ikut hidup anda.</em></h1>
         <p className="auth-lede">Log masuk untuk menyimpan kiraan EPF, SOCSO, perlindungan dan dana kecemasan secara berasingan untuk akaun anda — bukan dikongsi dengan profil lain.</p>
+        {error && <div className="auth-error" role="alert"><b>Log masuk tidak berjaya.</b><span>{error === "session" ? "Sesi log masuk tamat atau tidak sepadan. Cuba lagi." : "Ada masalah semasa menyambungkan akaun. Cuba lagi."}</span></div>}
         <Button className="auth-login" onClick={() => startLogin()} disabled={loading}>
           {loading ? "Menyemak akaun..." : "Log masuk dengan selamat"}
           <LockKeyhole size={16} />

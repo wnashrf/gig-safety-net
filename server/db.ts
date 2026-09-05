@@ -35,7 +35,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     };
     const updateSet: Record<string, unknown> = {};
 
-    const textFields = ["name", "email", "loginMethod"] as const;
+    const textFields = ["name", "email", "loginMethod", "workerType", "calculatorInputs"] as const;
     type TextField = (typeof textFields)[number];
 
     const assignNullable = (field: TextField) => {
@@ -110,4 +110,44 @@ export async function upsertSafetyPlan(userId: number, items: string[]) {
     set: { items: values.items, updatedAt: new Date() },
   });
   return { items };
+}
+
+export async function getAccountData(userId: number) {
+  const db = await getDb();
+  if (!db) return { profile: null, calculatorInputs: {}, plan: { items: [] as string[] } };
+  const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const plan = await getSafetyPlan(userId);
+  const user = userResult[0];
+  let calculatorInputs: Record<string, unknown> = {};
+  try {
+    const parsed = user?.calculatorInputs ? JSON.parse(user.calculatorInputs) : {};
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) calculatorInputs = parsed;
+  } catch {}
+  return {
+    profile: user ? { name: user.name, email: user.email, workerType: user.workerType } : null,
+    calculatorInputs,
+    plan,
+  };
+}
+
+export async function updateUserProfile(userId: number, profile: { name: string; workerType: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.update(users).set({ name: profile.name, workerType: profile.workerType }).where(eq(users.id, userId));
+  return profile;
+}
+
+export async function updateCalculatorInputs(userId: number, inputs: Record<string, unknown>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.update(users).set({ calculatorInputs: JSON.stringify(inputs) }).where(eq(users.id, userId));
+  return inputs;
+}
+
+export async function deleteUserAccount(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.delete(safetyPlans).where(eq(safetyPlans.userId, userId));
+  await db.delete(users).where(eq(users.id, userId));
+  return { success: true as const };
 }
