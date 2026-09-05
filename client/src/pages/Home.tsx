@@ -48,6 +48,7 @@ import {
 import { toast } from "sonner";
 
 type ToolKey = "epf" | "socso" | "insurance" | "emergency";
+type Language = "bm" | "en";
 type CalculatorInputValue = string | number | boolean | null;
 type CalculatorInputs = Record<string, CalculatorInputValue>;
 type SyncInputs = (changes: CalculatorInputs) => void;
@@ -63,6 +64,11 @@ const openExternal = (url: string) => window.open(url, "_blank", "noopener,noref
 const scrollToId = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
+
+const uiCopy = {
+  bm: { how: "Cara ia bantu", tools: "Kiraan", comparison: "Perbandingan", plan: "Plan saya", login: "Log masuk", savePlan: "Simpan plan", language: "Bahasa Malaysia", heroEyebrow: "Jaringan keselamatan untuk kerja fleksibel", heroTitle: "Kerja ikut cara anda.", heroTitleAccent: "Masa depan pun.", heroCta: "Mulakan dengan kiraan", video: "Tonton video 1:15", howEyebrow: "Kurang jargon. Lebih tindakan.", howTitle: "Mulakan kecil,", howAccent: "bina perlahan-lahan.", toolsEyebrow: "Alat kiraan peribadi", toolsTitle: "Angka yang masuk akal", toolsAccent: "untuk hidup sebenar.", shareTitle: "Hantar pada kawan", shareAccent: "satu shift.", shareBody: "Video pendek, bahasa santai, mesej yang mudah diteruskan dalam group rider dan courier.", planTitle: "Plan anda,", planAccent: "di satu tempat.", footer: "Platform panduan kewangan untuk pekerja gig Malaysia." },
+  en: { how: "How it helps", tools: "Calculators", comparison: "Compare", plan: "My plan", login: "Log in", savePlan: "Save plan", language: "English", heroEyebrow: "A safety net for flexible work", heroTitle: "Work your way.", heroTitleAccent: "Your future, too.", heroCta: "Start with a calculation", video: "Watch video 1:15", howEyebrow: "Less jargon. More action.", howTitle: "Start small,", howAccent: "build steadily.", toolsEyebrow: "Personal calculators", toolsTitle: "Numbers that make sense", toolsAccent: "for real life.", shareTitle: "Send it to", shareAccent: "your shift mates.", shareBody: "A short, friendly explainer made to share with rider and courier communities.", planTitle: "Your plan,", planAccent: "in one place.", footer: "A financial guidance platform for Malaysia's gig workers." },
+} as const;
 
 const futureValueMonthly = (payment: number, annualRate: number, years: number) => {
   const months = Math.max(0, years * 12);
@@ -145,20 +151,21 @@ function MiniIcon({ icon: Icon, className = "" }: { icon: typeof Sparkles; class
   return <span className={`mini-icon ${className}`}><Icon size={16} strokeWidth={2.2} /></span>;
 }
 
-function AppHeader({ onMenu, user, isAuthenticated, onLogin, onLogout }: { onMenu: () => void; user: { name?: string | null; email?: string | null } | null; isAuthenticated: boolean; onLogin: () => void; onLogout: () => void }) {
+function AppHeader({ onMenu, user, isAuthenticated, onLogin, onLogout, language, onLanguageChange }: { onMenu: () => void; user: { name?: string | null; email?: string | null } | null; isAuthenticated: boolean; onLogin: () => void; onLogout: () => void; language: Language; onLanguageChange: () => void }) {
+  const copy = uiCopy[language];
   return (
     <header className="site-header">
       <div className="header-inner">
         <Logo />
         <nav className="desktop-nav" aria-label="Navigasi utama">
-          <button onClick={() => scrollToId("how-it-works")}>Cara ia bantu</button>
-          <button onClick={() => scrollToId("tools")}>Kiraan</button>
-          <button onClick={() => scrollToId("comparison")}>Perbandingan</button>
-          <button onClick={() => scrollToId("plan")}>Plan saya</button>
+          <button onClick={() => scrollToId("how-it-works")}>{copy.how}</button>
+          <button onClick={() => scrollToId("tools")}>{copy.tools}</button>
+          <button onClick={() => scrollToId("comparison")}>{copy.comparison}</button>
+          <button onClick={() => scrollToId("plan")}>{copy.plan}</button>
         </nav>
         <div className="header-actions">
-          <button className="lang-btn" aria-label="Bahasa Malaysia aktif">BM <ChevronDown size={13} /></button>
-          <button className="header-save" onClick={() => isAuthenticated ? scrollToId("plan") : onLogin()}><Bookmark size={16} /> <span>{isAuthenticated ? "Simpan plan" : "Log masuk"}</span></button>{isAuthenticated && <button className="user-chip" onClick={onLogout} title="Log keluar">{user?.name || user?.email || "Akaun anda"}<span>Log keluar</span></button>}
+          <button className="lang-btn" onClick={onLanguageChange} aria-label={`Switch language to ${language === "bm" ? "English" : "Bahasa Malaysia"}`}>{language === "bm" ? "BM" : "EN"} <ChevronDown size={13} /></button>
+          <button className="header-save" onClick={() => isAuthenticated ? scrollToId("plan") : onLogin()}><Bookmark size={16} /> <span>{isAuthenticated ? copy.savePlan : copy.login}</span></button>{isAuthenticated && <button className="user-chip" onClick={onLogout} title="Log keluar">{user?.name || user?.email || (language === "bm" ? "Akaun anda" : "Your account")}<span>{language === "bm" ? "Log keluar" : "Log out"}</span></button>}
           <button className="mobile-menu" onClick={onMenu} aria-label="Buka menu"><Menu size={21} /></button>
         </div>
       </div>
@@ -190,17 +197,18 @@ function HeroIllustration({ displayName }: { displayName: string }) {
   );
 }
 
-function Hero({ onVideo, displayName }: { onVideo: () => void; displayName: string }) {
+function Hero({ onVideo, displayName, language }: { onVideo: () => void; displayName: string; language: Language }) {
+  const copy = uiCopy[language];
   return (
     <section id="top" className="hero-section">
       <div className="container hero-grid">
         <div className="hero-copy">
-          <SectionEyebrow icon={ShieldCheck}>Jaringan keselamatan untuk kerja fleksibel</SectionEyebrow>
-          <h1>Kerja ikut cara anda.<br /><span>Masa depan pun.</span></h1>
+          <SectionEyebrow icon={ShieldCheck}>{copy.heroEyebrow}</SectionEyebrow>
+          <h1>{copy.heroTitle}<br /><span>{copy.heroTitleAccent}</span></h1>
           <p className="hero-lede">Satu tempat untuk faham, kira dan mula bina perlindungan kewangan — khas untuk rider, penghantar, freelancer dan yang bekerja sendiri.</p>
           <div className="hero-actions">
-            <button className="button button-primary" onClick={() => scrollToId("tools")}>Mulakan dengan kiraan <ArrowUpRight size={17} /></button>
-            <button className="button button-quiet" onClick={onVideo}><span className="play-icon"><Play size={13} fill="currentColor" /></span> Tonton video 1:15</button>
+            <button className="button button-primary" onClick={() => scrollToId("tools")}>{copy.heroCta} <ArrowUpRight size={17} /></button>
+            <button className="button button-quiet" onClick={onVideo}><span className="play-icon"><Play size={13} fill="currentColor" /></span> {copy.video}</button>
           </div>
           <div className="hero-trust"><span><LockKeyhole size={14} /> Tiada data dijual</span><span><Clock3 size={14} /> Siap dalam ~10 minit</span></div>
         </div>
@@ -211,7 +219,8 @@ function Hero({ onVideo, displayName }: { onVideo: () => void; displayName: stri
   );
 }
 
-function HowItWorks() {
+function HowItWorks({ language }: { language: Language }) {
+  const copy = uiCopy[language];
   const items = [
     { no: "01", icon: Calculator, title: "Kira apa yang sesuai", text: "Masukkan pendapatan dan komitmen sebenar. Kami tukar angka yang berserabut menjadi sasaran yang jelas." },
     { no: "02", icon: ClipboardCheck, title: "Faham pilihan anda", text: "Bezakan EPF untuk masa depan, SOCSO untuk kemalangan kerja dan perlindungan medikal tambahan." },
@@ -220,14 +229,14 @@ function HowItWorks() {
   return (
     <section id="how-it-works" className="section how-section">
       <div className="container">
-        <div className="section-head split-head"><div><SectionEyebrow icon={Sparkles}>Kurang jargon. Lebih tindakan.</SectionEyebrow><h2>Mulakan kecil,<br /><em>bina perlahan-lahan.</em></h2></div><p>Tak perlu faham semua hari ini. Pilih satu langkah yang paling dekat dengan hidup anda sekarang.</p></div>
+        <div className="section-head split-head"><div><SectionEyebrow icon={Sparkles}>{copy.howEyebrow}</SectionEyebrow><h2>{copy.howTitle}<br /><em>{copy.howAccent}</em></h2></div><p>{language === "bm" ? "Tak perlu faham semua hari ini. Pilih satu langkah yang paling dekat dengan hidup anda sekarang." : "You do not need to understand everything today. Choose the next step that fits your life right now."}</p></div>
         <div className="steps-grid">{items.map((item) => <div className="step-card" key={item.no}><div className="step-top"><span className="step-no">{item.no}</span><MiniIcon icon={item.icon} /></div><h3>{item.title}</h3><p>{item.text}</p><ChevronRight className="step-arrow" size={18} /></div>)}</div>
       </div>
     </section>
   );
 }
 
-function DashboardSnapshot({ onOpenPlan, profile, calculatorInputs, completedPlanItems, isAuthenticated }: { onOpenPlan: () => void; profile: { name: string; workerType: string }; calculatorInputs: CalculatorInputs; completedPlanItems: number; isAuthenticated: boolean }) {
+function DashboardSnapshot({ onOpenPlan, profile, calculatorInputs, completedPlanItems, isAuthenticated, language }: { onOpenPlan: () => void; profile: { name: string; workerType: string }; calculatorInputs: CalculatorInputs; completedPlanItems: number; isAuthenticated: boolean; language: Language }) {
   const income = typeof calculatorInputs.epfIncome === "number" && calculatorInputs.epfIncome > 0 ? calculatorInputs.epfIncome : null;
   const contribution = typeof calculatorInputs.epfContribution === "number" && calculatorInputs.epfContribution > 0 ? calculatorInputs.epfContribution : null;
   const hasData = Boolean(income || contribution || completedPlanItems || profile.workerType);
@@ -235,7 +244,7 @@ function DashboardSnapshot({ onOpenPlan, profile, calculatorInputs, completedPla
   return (
     <section className="snapshot-section">
       <div className="container snapshot-grid">
-        <div className="snapshot-intro"><SectionEyebrow icon={BarChart3}>Satu pandangan yang tenang</SectionEyebrow><h2>Ini bukan tentang<br /><span>jadi kaya cepat.</span></h2><p>Ini tentang tahu apa yang boleh anda kawal — walaupun pendapatan berubah-ubah setiap bulan.</p><button className="text-link" onClick={onOpenPlan}>{isAuthenticated ? `Lihat plan ${displayName}` : "Log masuk untuk lihat plan"} <ArrowUpRight size={16} /></button></div>
+        <div className="snapshot-intro"><SectionEyebrow icon={BarChart3}>{language === "bm" ? "Satu pandangan yang tenang" : "A calmer view"}</SectionEyebrow><h2>{language === "bm" ? "Ini bukan tentang" : "This is not about"}<br /><span>{language === "bm" ? "jadi kaya cepat." : "getting rich quick."}</span></h2><p>{language === "bm" ? "Ini tentang tahu apa yang boleh anda kawal — walaupun pendapatan berubah-ubah setiap bulan." : "It is about knowing what you can control, even when your income changes from month to month."}</p><button className="text-link" onClick={onOpenPlan}>{isAuthenticated ? `Lihat plan ${displayName}` : "Log masuk untuk lihat plan"} <ArrowUpRight size={16} /></button></div>
         <div className="snapshot-card">
           <div className="snapshot-card-head"><div><span className="muted-label">{isAuthenticated ? "PLAN AKAUN ANDA" : "PLAN PERIBADI"}</span><h3>{isAuthenticated ? `${displayName}, profil anda` : "Log masuk untuk mula"}</h3></div><span className={`saved-tag ${hasData ? "" : "empty"}`}>{hasData ? <><Check size={13} /> Disimpan</> : "Belum ada data"}</span></div>
           {hasData ? <><div className="snapshot-main"><div className="snapshot-ring"><div><span>RM</span><strong>{income ? income.toLocaleString("ms-MY") : "—"}</strong><small>{income ? "pendapatan" : "belum dikira"}</small></div></div><div className="snapshot-details"><div><span className="detail-label"><i className="dot dot-mint" /> Masa depan</span><strong>{contribution ? formatRM(contribution) : "Belum disimpan"} {contribution && <small>/ bulan</small>}</strong><em>{contribution ? "EPF i-Saraan / Plus" : "Kira EPF untuk tambah"}</em></div><div><span className="detail-label"><i className="dot dot-coral" /> Perlindungan</span><strong>{completedPlanItems > 0 ? "Disemak" : "Belum disimpan"}</strong><em>SOCSO / Takaful mengikut pilihan anda</em></div><div><span className="detail-label"><i className="dot dot-blue" /> Simpanan tenang</span><strong>{typeof calculatorInputs.emergencyProgress === "number" ? formatRM(calculatorInputs.emergencyProgress) : "Belum disimpan"}</strong><em>Dana kecemasan anda</em></div></div></div><div className="snapshot-progress"><div className="progress-header"><span>Perjalanan plan</span><b>{completedPlanItems} daripada 4 langkah</b></div><div className="progress-track"><span style={{ width: `${(completedPlanItems / 4) * 100}%` }} /></div></div></> : <div className="snapshot-empty"><UserRound size={22} /><b>Ruang ini masih kosong</b><p>Data profil dan kiraan akan muncul di sini selepas anda log masuk dan menyimpan pilihan anda.</p></div>}
@@ -245,12 +254,12 @@ function DashboardSnapshot({ onOpenPlan, profile, calculatorInputs, completedPla
   );
 }
 
-function ToolTabs({ active, setActive }: { active: ToolKey; setActive: (key: ToolKey) => void }) {
+function ToolTabs({ active, setActive, language }: { active: ToolKey; setActive: (key: ToolKey) => void; language: Language }) {
   const tabs: { key: ToolKey; label: string; icon: typeof Landmark }[] = [
     { key: "epf", label: "EPF", icon: Landmark },
     { key: "socso", label: "SOCSO", icon: ShieldCheck },
-    { key: "insurance", label: "Insurans", icon: HeartPulse },
-    { key: "emergency", label: "Dana kecemasan", icon: PiggyBank },
+    { key: "insurance", label: language === "bm" ? "Insurans" : "Insurance", icon: HeartPulse },
+    { key: "emergency", label: language === "bm" ? "Dana kecemasan" : "Emergency fund", icon: PiggyBank },
   ];
   return <div className="tool-tabs" role="tablist">{tabs.map(({ key, label, icon: Icon }) => <button role="tab" aria-selected={active === key} className={active === key ? "active" : ""} key={key} onClick={() => setActive(key)}><Icon size={16} /> <span>{label}</span></button>)}</div>;
 }
@@ -478,11 +487,14 @@ export default function Home() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [selectedInsurance, setSelectedInsurance] = useState("aia");
+  const [language, setLanguage] = useState<Language>(() => localStorage.getItem("lindung-gig-language") === "en" ? "en" : "bm");
   const [calculatorInputs, setCalculatorInputs] = useState<CalculatorInputs>({});
   const [savedItems, setSavedItems] = useState<string[]>([]);
   const syncTimer = useRef<number | null>(null);
   const profile = { name: String(accountQuery.data?.profile?.name || user?.name || user?.email?.split("@")[0] || ""), email: String(accountQuery.data?.profile?.email || user?.email || ""), workerType: String(accountQuery.data?.profile?.workerType || "") };
   const displayName = profile.name || "anda";
+  const copy = uiCopy[language];
+  const toggleLanguage = () => setLanguage((current) => { const next = current === "bm" ? "en" : "bm"; localStorage.setItem("lindung-gig-language", next); return next; });
 
   useEffect(() => {
     if (isAuthenticated && planQuery.data) setSavedItems(planQuery.data.items);
@@ -551,18 +563,18 @@ export default function Home() {
   if (authLoading || (isAuthenticated && accountQuery.isLoading)) return <div className="auth-loading">Menyediakan ruang peribadi anda...</div>;
 
   return <div className="app-shell">
-    <AppHeader onMenu={() => setMobileOpen(!mobileOpen)} user={user} isAuthenticated={isAuthenticated} onLogin={onLogin} onLogout={() => { void logout(); }} />
-    {mobileOpen && <div className="mobile-nav"><button onClick={() => { scrollToId("how-it-works"); setMobileOpen(false); }}>Cara ia bantu</button><button onClick={() => changeTool("epf")}>Kiraan</button><button onClick={() => { scrollToId("comparison"); setMobileOpen(false); }}>Perbandingan</button><button onClick={() => { scrollToId("plan"); setMobileOpen(false); }}>Plan saya</button></div>}
+    <AppHeader onMenu={() => setMobileOpen(!mobileOpen)} user={user} isAuthenticated={isAuthenticated} onLogin={onLogin} onLogout={() => { void logout(); }} language={language} onLanguageChange={toggleLanguage} />
+    {mobileOpen && <div className="mobile-nav"><button onClick={() => { scrollToId("how-it-works"); setMobileOpen(false); }}>{copy.how}</button><button onClick={() => changeTool("epf")}>{copy.tools}</button><button onClick={() => { scrollToId("comparison"); setMobileOpen(false); }}>{copy.comparison}</button><button onClick={() => { scrollToId("plan"); setMobileOpen(false); }}>{copy.plan}</button></div>}
     <main>
-      <Hero onVideo={() => setVideoOpen(true)} displayName={displayName} />
+      <Hero onVideo={() => setVideoOpen(true)} displayName={displayName} language={language} />
       <div className="signal-strip"><div><span className="signal-number">1.8m</span><span>pekerja gig di Malaysia</span></div><i /><div><span className="signal-number">3</span><span>lapisan perlindungan</span></div><i /><div><span className="signal-number">10 min</span><span>untuk mula dengan jelas</span></div></div>
-      <HowItWorks />
-      <DashboardSnapshot onOpenPlan={() => scrollToId("plan")} profile={profile} calculatorInputs={calculatorInputs} completedPlanItems={completedPlanItems} isAuthenticated={isAuthenticated} />
-      <section id="tools" className="section tools-section"><div className="container"><div className="section-head tools-head"><div><SectionEyebrow icon={Calculator}>Alat kiraan peribadi</SectionEyebrow><h2>Angka yang masuk akal<br /><em>untuk hidup sebenar.</em></h2></div><p>Semua kiraan dibuat terus dalam pelayar. Tiada pendaftaran diperlukan untuk mula.</p></div><ToolTabs active={activeTool} setActive={setActiveTool} />{activeTool === "epf" && <EpfCalculator onSave={saveItem} initialInputs={calculatorInputs} onSync={syncCalculatorInputs} />}{activeTool === "socso" && <SocsoCalculator onSave={saveItem} initialInputs={calculatorInputs} onSync={syncCalculatorInputs} />}{activeTool === "insurance" && <InsuranceComparison selected={selectedInsurance} setSelected={(value) => { setSelectedInsurance(value); syncCalculatorInputs({ insuranceSelected: value }); }} onSave={saveItem} />}{activeTool === "emergency" && <EmergencyBuilder onSave={saveItem} initialInputs={calculatorInputs} onSync={syncCalculatorInputs} />}</div></section>
-      <section className="share-section"><div className="container share-grid"><div className="share-copy"><SectionEyebrow icon={Share2}>Cerita ini boleh sampai jauh</SectionEyebrow><h2>Hantar pada kawan<br /><em>satu shift.</em></h2><p>Video pendek, bahasa santai, mesej yang mudah diteruskan dalam group rider dan courier.</p><button className="button button-dark" onClick={() => setVideoOpen(true)}><Play size={15} fill="currentColor" /> Tonton & kongsi</button></div><div className="share-video-teaser" onClick={() => setVideoOpen(true)} role="button" tabIndex={0}><div className="teaser-avatar"><span className="teaser-hair" /><span className="teaser-face"><i /><i /><b /></span></div><div className="teaser-copy"><span>VIDEO 01:15 • AI AVATAR BM</span><b>“Kalau bulan ni tak menentu,<br />macam mana masa depan nak terjaga?”</b></div><span className="teaser-play"><Play size={19} fill="currentColor" /></span><span className="teaser-corner">WHATSAPP READY</span></div></div></section>
+      <HowItWorks language={language} />
+      <DashboardSnapshot onOpenPlan={() => scrollToId("plan")} profile={profile} calculatorInputs={calculatorInputs} completedPlanItems={completedPlanItems} isAuthenticated={isAuthenticated} language={language} />
+      <section id="tools" className="section tools-section"><div className="container"><div className="section-head tools-head"><div><SectionEyebrow icon={Calculator}>{copy.toolsEyebrow}</SectionEyebrow><h2>{copy.toolsTitle}<br /><em>{copy.toolsAccent}</em></h2></div><p>{language === "bm" ? "Semua kiraan dibuat terus dalam pelayar. Tiada pendaftaran diperlukan untuk mula." : "All calculations run in your browser. No registration is needed to get started."}</p></div><ToolTabs active={activeTool} setActive={setActiveTool} language={language} />{activeTool === "epf" && <EpfCalculator onSave={saveItem} initialInputs={calculatorInputs} onSync={syncCalculatorInputs} />}{activeTool === "socso" && <SocsoCalculator onSave={saveItem} initialInputs={calculatorInputs} onSync={syncCalculatorInputs} />}{activeTool === "insurance" && <InsuranceComparison selected={selectedInsurance} setSelected={(value) => { setSelectedInsurance(value); syncCalculatorInputs({ insuranceSelected: value }); }} onSave={saveItem} />}{activeTool === "emergency" && <EmergencyBuilder onSave={saveItem} initialInputs={calculatorInputs} onSync={syncCalculatorInputs} />}</div></section>
+      <section className="share-section"><div className="container share-grid"><div className="share-copy"><SectionEyebrow icon={Share2}>{language === "bm" ? "Cerita ini boleh sampai jauh" : "Pass it along"}</SectionEyebrow><h2>{copy.shareTitle}<br /><em>{copy.shareAccent}</em></h2><p>{copy.shareBody}</p><button className="button button-dark" onClick={() => setVideoOpen(true)}><Play size={15} fill="currentColor" /> {language === "bm" ? "Tonton & kongsi" : "Watch & share"}</button></div><div className="share-video-teaser" onClick={() => setVideoOpen(true)} role="button" tabIndex={0}><div className="teaser-avatar"><span className="teaser-hair" /><span className="teaser-face"><i /><i /><b /></span></div><div className="teaser-copy"><span>VIDEO 01:15 • AI AVATAR BM</span><b>“Kalau bulan ni tak menentu,<br />macam mana masa depan nak terjaga?”</b></div><span className="teaser-play"><Play size={19} fill="currentColor" /></span><span className="teaser-corner">WHATSAPP READY</span></div></div></section>
       <PlanSection savedItems={savedItems.slice(0, savedCount)} planItems={planItems} completedPlanItems={completedPlanItems} isAuthenticated={isAuthenticated} onLogin={onLogin} displayName={displayName} onReset={resetPlan} />{isAuthenticated && <section id="account-settings" className="section account-section"><div className="container"><AccountProfileSummary profile={profile} savedCount={savedItems.length} completedPlanItems={completedPlanItems} hasCalculatorData={Object.keys(calculatorInputs).some((key) => key !== "workerType")} /><AccountSettings profile={profile} onSave={(value) => profileMutation.mutate(value)} onExport={exportData} onDelete={requestDeleteAccount} saving={profileMutation.isPending} deleting={deleteMutation.isPending} /></div></section>}
     </main>
-    <footer className="site-footer"><div className="container footer-top"><Logo /><div className="footer-meta"><span>Platform panduan kewangan untuk pekerja gig Malaysia.</span><span className="footer-disclaimer"><CircleHelp size={13} /> Ini bukan nasihat kewangan, tawaran insurans atau portal rasmi kerajaan.</span></div><button className="back-top" onClick={() => scrollToId("top")} aria-label="Kembali ke atas"><ArrowUpRight size={18} /></button></div><div className="container footer-bottom"><span>© 2026 Lindung Gig • Prototaip PRD v1.0</span><span>EPF & PERKESO: semak maklumat rasmi sebelum bertindak.</span></div></footer>
+    <footer className="site-footer"><div className="container footer-top"><Logo /><div className="footer-meta"><span>{copy.footer}</span><span className="footer-disclaimer"><CircleHelp size={13} /> {language === "bm" ? "Ini bukan nasihat kewangan, tawaran insurans atau portal rasmi kerajaan." : "This is not financial advice, an insurance offer, or an official government portal."}</span></div><button className="back-top" onClick={() => scrollToId("top")} aria-label={language === "bm" ? "Kembali ke atas" : "Back to top"}><ArrowUpRight size={18} /></button></div><div className="container footer-bottom"><span>© 2026 Lindung Gig • PRD Prototype v1.0</span><span>{language === "bm" ? "EPF & PERKESO: semak maklumat rasmi sebelum bertindak." : "EPF & PERKESO: check official information before taking action."}</span></div></footer>
     {videoOpen && <VideoModal onClose={() => setVideoOpen(false)} />}
   </div>;
 }
